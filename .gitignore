@@ -1,0 +1,27 @@
+florr-client/node_modules/
+florr-client/dist/
+florr-client/out/
+florr-client/build/
+florr-client/electron-builder-cache/
+florr-client/*.asar
+florr-client/*.db
+
+# 日志文件
+florr-client/*.log
+florr-client/logs/
+florr-client/*.pid
+florr-client/*.seed
+florr-client/*.pid.lock
+
+# 操作系统垃圾文件
+florr-client/.DS_Store
+florr-client/Thumbs.db
+florr-client/*.swp
+florr-client/*.swo
+florr-client/*.bak
+florr-client/*.tmp
+
+# VSCode / IDE 配置
+.vscode/
+
+# .gitignore
