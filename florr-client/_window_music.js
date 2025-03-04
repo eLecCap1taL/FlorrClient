@@ -66,4 +66,8 @@ function createMusicWindow() {
     return musicWindow;
 }
 
-module.exports = { createMusicWindow ,_music_setMainQuited,changeBGM,setPause,_music_getLstMap};
+function playSound(spath){
+    musicWindow.webContents.send('playSound',spath);
+}
+
+module.exports = { createMusicWindow ,_music_setMainQuited,changeBGM,setPause,_music_getLstMap,playSound};

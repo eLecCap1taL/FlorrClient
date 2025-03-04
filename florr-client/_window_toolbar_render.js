@@ -58,7 +58,7 @@ window.myAPI.onUpdMapCodeList((serverData) => {
     serverData.forEach(([serverId, idx]) => {
         if (idx >= 1 && idx <= 8) mapServers[idx - 1].push(serverId);
     });
-    const idx2map = ["Unknown", "Garden", "Desert", "Ocean", "Jungle", "Hel", "Sewers", "AntHell", "Factory"];
+    const idx2map = ["Unknown", "Garden", "Desert", "Ocean", "Jungle", "AntHell","Hel", "Sewers" , "Factory"];
     serverList.innerHTML = '';
     for (let i = 0; i < 7; i++) {
         const div = document.createElement('div');

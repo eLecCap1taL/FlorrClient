@@ -19,7 +19,7 @@ volumeInput.addEventListener('input', () => {
 
 musicStyle.addEventListener('change', () => {
     player.src = ''
-    curmusic.textContent=''
+    curmusic.textContent = ''
     player.currentTime = 0
     player.volume = volumeSlider.value / 100.0;
     player.pause();
@@ -32,7 +32,7 @@ resetButton.addEventListener('click', () => {
     volumeInput.value = 30;
 
     player.src = ''
-    curmusic.textContent=''
+    curmusic.textContent = ''
     player.currentTime = 0
     player.volume = volumeSlider.value / 100.0;
     player.pause();
@@ -40,24 +40,29 @@ resetButton.addEventListener('click', () => {
 });
 
 
+window.myAPI.onPlaySound((soundpath) => {
+    const audio = new Audio(soundpath);
+    audio.play();
+});
+
 window.myAPI.onSetMusic((musicpath) => {
     player.src = musicpath[0]
     player.currentTime = 0
     player.volume = volumeSlider.value / 100.0;
     player.play()
-    curmusic.textContent=musicpath[1]
+    curmusic.textContent = musicpath[1]
     // alert(musicpath[1])
 });
 
 window.myAPI.onSetPause((val) => {
-    if(val==0){
+    if (val == 0) {
         player.play();
-    }else if(val==1){
+    } else if (val == 1) {
         player.pause();
-    }else{
-        if(player.paused){
+    } else {
+        if (player.paused) {
             player.play();
-        }else{
+        } else {
             player.pause();
         }
     }
@@ -68,5 +73,5 @@ window.myAPI.onSetPause((val) => {
 player.src = ''
 player.valume = 0.3
 player.loop = true
-curmusic.textContent=''
+curmusic.textContent = ''
 player.pause()

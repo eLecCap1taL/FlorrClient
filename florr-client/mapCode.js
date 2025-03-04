@@ -7,7 +7,7 @@ function sleep(ms) {
 class mapCode {
     constructor() {
         this.code2idx = new Map();
-        this.idx2map = ["Unknown", "Garden", "Desert", "Ocean", "Jungle", "Hel", "Sewers", "AntHell", "Factory"];
+        this.idx2map = ["Unknown", "Garden", "Desert", "Ocean", "Jungle", "AntHell","Hel", "Sewers" , "Factory"];
         this.curMapCode = "0d00"
     }
     async initMapCodes() {

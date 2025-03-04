@@ -2,7 +2,8 @@ const { app, BrowserWindow, globalShortcut,ipcMain } = require('electron');
 const path = require("path");
 const mapCode = require('./mapCode')
 const { createToolbarWindow,toolbarLog,toolbarUpdMapCode, _toolbar_setMainQuited } = require('./_window_toolbar');
-const { createMusicWindow ,_music_setMainQuited, changeBGM,setPause} = require('./_window_music');
+const { createMusicWindow ,_music_setMainQuited, changeBGM,setPause,playSound} = require('./_window_music');
+// const sound = require("sound-play")
 
 let mainWindow;
 // let initCompleted = false
@@ -58,6 +59,7 @@ app.whenReady().then(async () => {
     //工具栏
     globalShortcut.register('CommandOrControl+Shift+K', () => {
         if(bosshide)    return ;
+        playSound('./music/click.mp3');
         if(toolbarWindow && !toolbarWindow.isDestroyed())
             if(toolbarWindow.isVisible()){
                 toolbarWindow.hide();
@@ -77,27 +79,29 @@ app.whenReady().then(async () => {
     //音乐栏
     globalShortcut.register('CommandOrControl+Shift+M', () => {
         if(bosshide)    return ;
+        playSound('./music/click.mp3');
         if(musicWindow && !musicWindow.isDestroyed())
             if(musicWindow.isVisible()){
                 musicWindow.hide();
                 console.log('hide-music');
-                musichide=true
             }else{
                 musicWindow.show();
                 console.log('show-music');
-                musichide=false
             }
         else{
             musicWindow = createMusicWindow();
             console.log('build-music');
-            musichide=false
         }
     });
 
+    // sound.play("https://attachment.0sm.com/node0/2023/06/86482692BC432E40-b2e2bb0bdf9ad133.mp3");
     //一键隐藏游戏
     globalShortcut.register('Alt+X', () => {
+        playSound('./music/click.mp3');
         if(mainWindow.isVisible()){
             bosshide=true
+            toolbarhide=!toolbarWindow.isVisible();
+            musichide=!musicWindow.isVisible();
             mainWindow.hide();
             toolbarWindow.hide();
             musicWindow.hide();
