@@ -45,8 +45,6 @@ app.whenReady().then(async () => {
         mainWindow.webContents.toggleDevTools();
     });
     globalShortcut.register('CommandOrControl+Shift+K', () => {
-        // mainWindow.webContents.toggleDevTools();
-        // console.log('123')
         if(toolbarWindow && !toolbarWindow.isDestroyed())
             if(toolbarWindow.isVisible()){
                 toolbarWindow.hide();
@@ -137,10 +135,12 @@ app.whenReady().then(async () => {
 
     //地图代码初始化
     await mapcode.initMapCodes();
+    toolbarWindow.webContents.send('setMapCodeList',[...mapcode.code2idx]);
 
     // 处理地图代码更新请求
-    ipcMain.on('updMapCode', async () => {
+    ipcMain.on('_updMapCode', async () => {
         await mapcode.initMapCodes();
+        toolbarWindow.webContents.send('setMapCodeList',[...mapcode.code2idx]);
     });
 });
 

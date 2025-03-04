@@ -1,48 +1,169 @@
 <!-- extra.html -->
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Florr Client Tools</title><style>
+    <title>Florr Client Tools</title>
+    <style>
         body {
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            font-family: Arial, sans-serif;
+            height: calc(100vh - 60px);
+            /* 减去 margin 40px + padding 20px */
+            margin: 20px;
+            /* 左右 20px，上下 20px */
+            padding: 10px 0;
+            /* 上下 padding 10px */
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f0f2f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow-y: hidden;
+            /* 禁用滚动条，内容应自适应 */
         }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            margin: 5px;
-        }
+
         #logBox {
             width: 80%;
-            height: 200px;
-            margin-top: 10px;
-            padding: 5px;
-            font-family: monospace;
-            resize: none; /* 禁止调整大小 */
-            overflow-y: auto; /* 自动滚动 */
+            height: 150px;
+            /* 减小高度，从 200px 到 150px */
+            margin-top: 5px;
+            padding: 10px;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            border: none;
+            border-radius: 6px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            resize: none;
+            overflow-y: auto;
+        }
+
+        #serverList {
+            width: 80%;
+            text-align: left;
+            font-family: 'Consolas', monospace;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 10px;
+            display: none;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            max-height: 120px;
+            /* 减小最大高度，从 150px 到 120px */
+            overflow-y: auto;
+        }
+
+
+        button {
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 500;
+            margin: 10px;
+            /* 增加外边距，上下间距变为 20px */
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        #_updMapCode {
+            padding: 12px 24px;
+            /* 大按钮 */
+            font-size: 16px;
+            background: #0078d4;
+            color: white;
+        }
+
+        #toggleServerList {
+            padding: 8px 16px;
+            /* 中等按钮 */
+            font-size: 14px;
+            background: #17a2b8;
+            color: white;
+        }
+
+        #server-info {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        #server-id {
+            font-weight: bold;
+            color: #e67e22;
         }
 
         hr {
+            border: 0;
+            height: 1px;
+            width: 60%;
+            background: linear-gradient(to right, transparent, #bbb, transparent);
+            margin: 15px auto;
+        }
+
+        label {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        @keyframes glow {
+            0% {
+                box-shadow: 0 0 0 0 var(--glow-color);
+            }
+
+            50% {
+                box-shadow: 0 0 15px 5px var(--glow-color);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 var(--glow-color);
+            }
+        }
+
+        #clearLogButton {
+            padding: 4px 8px;
+            /* 更小巧 */
+            font-size: 12px;
+            background: #f0f2f5;
+            /* 与 body 背景一致 */
+            color: #555;
+            /* 与 label 一致 */
+            margin-left: 10px;
+            /* 与 label 的间距 */
             border: 1px solid #ccc;
-            /* width: 50%; */
-            margin: 10px auto;
+            /* 轻微边框区分 */
         }
     </style>
 </head>
+
 <body>
-    <button id="updMapCode">刷新地图服务器代码</button>
+    <button id="_updMapCode">刷新地图服务器代码</button>
+    <button id="toggleServerList">显示完整服务器列表</button>
+    <div id="serverList">
+        <div><span style="display: inline-block; width: 80px;">Garden</span>:</div>
+        <div><span style="display: inline-block; width: 80px;">Desert</span>:</div>
+        <div><span style="display: inline-block; width: 80px;">Ocean</span>:</div>
+        <div><span style="display: inline-block; width: 80px;">Jungle</span>:</div>
+        <div><span style="display: inline-block; width: 80px;">Hel</span>:</div>
+        <div><span style="display: inline-block; width: 80px;">Sewers</span>:</div>
+        <div><span style="display: inline-block; width: 80px;">AntHell</span>:</div>
+    </div>
     <div id="server-info">
         玩家所处服务器ID: <span id="server-id">尚未连接到任何服务器</span>
-    </div>    
+    </div>
     <hr>
-    <label>Florr Client 日志</label>
-    <textarea id="logBox" readonly></textarea> <!-- 日志框 -->
+    <div style="display: flex; align-items: center; margin-bottom: 5px;">
+        <label>Florr Client 日志</label>
+        <button id="clearLogButton">清空日志</button>
+    </div>
+    <textarea id="logBox" readonly></textarea>
 
     <script src="./_window_toolbar_render.js"></script>
 </body>
+
 </html>

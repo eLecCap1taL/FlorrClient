@@ -7,10 +7,12 @@ function setMainQuited(){
 }
 
 function toolbarLog(logstring){
-    toolbarWindow.webContents.executeJavaScript('appendLog("'+logstring+'")')
+    // toolbarWindow.webContents.executeJavaScript('appendLog("'+logstring+'")')
+    toolbarWindow.webContents.send('log',logstring)
 }
 function toolbarUpdMapCode(mapcode){
-    toolbarWindow.webContents.executeJavaScript('setCurMapCode("'+mapcode+'")')
+    // toolbarWindow.webContents.executeJavaScript('setCurMapCode("'+mapcode+'")')
+    toolbarWindow.webContents.send('setCurMapCode',mapcode)
 }
 
 // function toolbarCMD(cmdstring){
@@ -23,6 +25,7 @@ function createToolbarWindow() {
         height: 600,
         title: "Florr Client Tools",
         icon: path.join(__dirname, './icon.ico'),
+        resizable: false, // 禁止调整大小
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
@@ -35,7 +38,7 @@ function createToolbarWindow() {
 
     // 移除菜单栏
     toolbarWindow.setMenu(null);
-    // toolbarWindow.webContents.toggleDevTools    ();
+    // toolbarWindow.webContents.toggleDevTools();
 
     // console.log("test");
 
