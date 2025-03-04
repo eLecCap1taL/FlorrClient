@@ -1,13 +1,17 @@
 const axios = require('axios');
 const { toolbarLog } = require('./_window_toolbar');
-
-class mapCode{
-    constructor(){
+const { _music_getLstMap, changeBGM } = require('./_window_music');
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+class mapCode {
+    constructor() {
         this.code2idx = new Map();
-        this.idx2map = ["Unknown","Garden", "Desert", "Ocean", "Jungle", "Hel", "Sewers", "AntHell", "Factory"];
+        this.idx2map = ["Unknown", "Garden", "Desert", "Ocean", "Jungle", "Hel", "Sewers", "AntHell", "Factory"];
         this.curMapCode = "0d00"
     }
     async initMapCodes() {
+        // await sleep(5000)
         toolbarLog("开始初始化地图代码")
         console.log("Start GET mapCodes")
         try {
@@ -35,12 +39,17 @@ class mapCode{
                 for (const serverKey in servers) {
                     if (servers.hasOwnProperty(serverKey)) {
                         const serverId = servers[serverKey].id;
-                        this.code2idx.set(serverId, i+1);
+                        this.code2idx.set(serverId, i + 1);
                     }
                 }
             }
             toolbarLog("初始化地图代码成功");
-            console.log("Succ Init Map:",this.code2idx);
+            console.log("Succ Init Map:", this.code2idx);
+
+            //用于恢复初始音乐
+            if (_music_getLstMap() == 'Unknown' && this.curMapCode != '0d00') {
+                changeBGM(this.getMapByCode(this.curMapCode))
+            }
         } catch (error) {
             toolbarLog("初始化地图代码失败");
             console.error("Init MapCode Error:", error.message);
@@ -54,13 +63,13 @@ class mapCode{
         return this.idx2map[this.getIdxByCode(serverId)]
     }
     getMapByIdx(serverId) {
-        if(!(0<=serverId && serverId<=8))   serverId=0;
+        if (!(0 <= serverId && serverId <= 8)) serverId = 0;
         return this.idx2map[serverId]
     }
 
-    updCurMapCode(newMapCode){
-        this.curMapCode=newMapCode
-        console.log("get a new map at "+this.getMapByCode(newMapCode));
+    updCurMapCode(newMapCode) {
+        this.curMapCode = newMapCode
+        console.log("get a new map at " + this.getMapByCode(newMapCode));
     }
 }
 

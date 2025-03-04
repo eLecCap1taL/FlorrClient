@@ -1,0 +1,96 @@
+<!-- music.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Florr Client Music</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: calc(100vh - 60px);
+            margin: 20px;
+            padding: 10px 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f0f2f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow-y: hidden;
+        }
+
+        select, button, input {
+            border-radius: 6px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 10px;
+        }
+
+        select {
+            padding: 8px 16px;
+            font-size: 14px;
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #volumeSlider {
+            width: 200px;
+        }
+
+        #volumeInput {
+            width: 50px;
+            padding: 4px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+
+        button {
+            padding: 8px 16px;
+            font-size: 14px;
+            background: #17a2b8;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #music-info {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        #music-id {
+            font-weight: bold;
+            color: #e67e22;
+        }
+    </style>
+</head>
+<body>
+    <select id="musicStyle">
+        <option value="terraria">泰拉瑞亚</option>
+        <option value="none">无</option>
+    </select>
+    <div class="control-group">
+        音量
+        <input type="range" id="volumeSlider" min="0" max="100" value="30">
+        <input type="number" id="volumeInput" min="0" max="100" value="30">
+    </div>
+    <button id="resetMusic">重置音乐</button>
+    <div id="music-info">
+        正在播放: <span id="music-id"></span>
+    </div>
+    <audio id="player"></audio>
+
+    <script src="./_window_music_render.js"></script>
+</body>
+</html>

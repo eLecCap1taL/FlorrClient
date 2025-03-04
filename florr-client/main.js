@@ -1,12 +1,17 @@
 const { app, BrowserWindow, globalShortcut,ipcMain } = require('electron');
 const path = require("path");
 const mapCode = require('./mapCode')
-const { createToolbarWindow,setMainQuited,toolbarLog,toolbarUpdMapCode } = require('./_window_toolbar');
+const { createToolbarWindow,toolbarLog,toolbarUpdMapCode, _toolbar_setMainQuited } = require('./_window_toolbar');
+const { createMusicWindow ,_music_setMainQuited, changeBGM,setPause} = require('./_window_music');
 
 let mainWindow;
 // let initCompleted = false
 let mapcode=new mapCode()
+let bosshide=false
+let toolbarhide=true
+let musichide=true
 
+//处理日志
 function processLog(logMsg){
     console.log("florr.io Console:", logMsg);
 
@@ -16,11 +21,13 @@ function processLog(logMsg){
         // toolbarLog("连接到新服务器")
         mapcode.updCurMapCode(match[1]);
         toolbarUpdMapCode(match[1])
+        changeBGM(mapcode.getMapByCode(match[1]));
         // toolbarCMD("setCurMapCode("+match[1]+")");
         return ;
     }
 }
 
+//Main
 app.whenReady().then(async () => {
     mainWindow = new BrowserWindow({
         width: 1280,
@@ -38,25 +45,73 @@ app.whenReady().then(async () => {
 
     //加载工具栏窗口
     toolbarWindow = createToolbarWindow();
-    // toolbarWindow.hide()
+    toolbarWindow.hide()
 
-    // 注册快捷键以切换开发者工具
+    //加载音乐栏窗口
+    musicWindow = createMusicWindow();
+    musicWindow.hide()
+
+    //开发者工具快捷键
     globalShortcut.register('CommandOrControl+Shift+I', () => {
         mainWindow.webContents.toggleDevTools();
     });
+    //工具栏
     globalShortcut.register('CommandOrControl+Shift+K', () => {
+        if(bosshide)    return ;
         if(toolbarWindow && !toolbarWindow.isDestroyed())
             if(toolbarWindow.isVisible()){
                 toolbarWindow.hide();
-                console.log('hide');
+                console.log('hide-tools');
+                toolbarhide=true
             }else{
                 toolbarWindow.show();
-                console.log('show');
+                console.log('show-tools');
+                toolbarhide=false
             }
         else{
             toolbarWindow = createToolbarWindow();
-            console.log('build');
+            console.log('build-tools');
+            toolbarhide=false
         }
+    });
+    //音乐栏
+    globalShortcut.register('CommandOrControl+Shift+M', () => {
+        if(bosshide)    return ;
+        if(musicWindow && !musicWindow.isDestroyed())
+            if(musicWindow.isVisible()){
+                musicWindow.hide();
+                console.log('hide-music');
+                musichide=true
+            }else{
+                musicWindow.show();
+                console.log('show-music');
+                musichide=false
+            }
+        else{
+            musicWindow = createMusicWindow();
+            console.log('build-music');
+            musichide=false
+        }
+    });
+
+    //一键隐藏游戏
+    globalShortcut.register('Alt+X', () => {
+        if(mainWindow.isVisible()){
+            bosshide=true
+            mainWindow.hide();
+            toolbarWindow.hide();
+            musicWindow.hide();
+            setPause(1);
+            toolbarLog("Florr Client 已隐藏")
+        }else{
+            bosshide=false
+            mainWindow.show();
+            if(!toolbarhide)    toolbarWindow.show();
+            if(!musichide)      musicWindow.show();
+            setPause(0);
+            toolbarLog("Florr Client 已显示")
+        }
+        
     });
 
     // initCompleted = true;
@@ -126,11 +181,15 @@ app.whenReady().then(async () => {
     // 主窗口强制退出程序
     mainWindow.on('closed', () => {
         if (toolbarWindow && !toolbarWindow.isDestroyed()) {
-            setMainQuited();
-            toolbarWindow.destroy(); // 关闭额外窗口
+            _toolbar_setMainQuited();
+            toolbarWindow.destroy();
         }
-        mainWindow = null; // 清理引用
-        app.quit(); // 强制退出程序
+        if (musicWindow && !musicWindow.isDestroyed()) {
+            _music_setMainQuited();
+            musicWindow.destroy();
+        }
+        mainWindow = null;
+        app.quit();
     });
 
     //地图代码初始化

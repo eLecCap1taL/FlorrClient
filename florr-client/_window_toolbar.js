@@ -2,7 +2,7 @@ const { BrowserWindow} = require('electron');
 const path = require('path');
 
 let ifMainQuited = false
-function setMainQuited(){
+function _toolbar_setMainQuited(){
     ifMainQuited=true
 }
 
@@ -49,12 +49,9 @@ function createToolbarWindow() {
             event.preventDefault(); // 阻止默认关闭行为
             toolbarWindow.hide();
         }
-        // if (extraWindow.webContents) {
-        //     extraWindow.webContents.send('log-message', '工具栏窗口已隐藏（点击关闭按钮）');
-        // }
     });
 
     return toolbarWindow;
 }
 
-module.exports = { createToolbarWindow ,setMainQuited,toolbarLog,toolbarUpdMapCode};
+module.exports = { createToolbarWindow ,_toolbar_setMainQuited,toolbarLog,toolbarUpdMapCode};
