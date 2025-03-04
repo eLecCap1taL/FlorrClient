@@ -1,6 +1,4 @@
-# Florr Client
-
-![Florr Client Logo](./resource/favicon.ico) 
+<h1 align="center"><img src="./resource/favicon.ico" width="64" align="center">Florr Client</h1>
 
 ## 简介
 
