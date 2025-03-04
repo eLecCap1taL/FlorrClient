@@ -1,6 +1,6 @@
-setInterval(() => {
-    document.title = "Florr Client";
-}, 1000);
+// setInterval(() => {
+//     document.title = "Florr Client";
+// }, 1000);
 
 
 // const { ipcRenderer } = require('electron');
