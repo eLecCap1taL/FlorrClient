@@ -19,6 +19,7 @@ volumeInput.addEventListener('input', () => {
 
 musicStyle.addEventListener('change', () => {
     player.src = ''
+    curmusic.textContent=''
     player.currentTime = 0
     player.volume = volumeSlider.value / 100.0;
     player.pause();
@@ -31,6 +32,7 @@ resetButton.addEventListener('click', () => {
     volumeInput.value = 30;
 
     player.src = ''
+    curmusic.textContent=''
     player.currentTime = 0
     player.volume = volumeSlider.value / 100.0;
     player.pause();
@@ -43,7 +45,7 @@ window.myAPI.onSetMusic((musicpath) => {
     player.currentTime = 0
     player.volume = volumeSlider.value / 100.0;
     player.play()
-    curmusic=musicpath[1]
+    curmusic.textContent=musicpath[1]
     // alert(musicpath[1])
 });
 
@@ -66,4 +68,5 @@ window.myAPI.onSetPause((val) => {
 player.src = ''
 player.valume = 0.3
 player.loop = true
+curmusic.textContent=''
 player.pause()
