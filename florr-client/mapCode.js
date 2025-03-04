@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { toolbarLog } = require('./_window_toolbar');
 
 class mapCode{
     constructor(){
@@ -7,20 +8,8 @@ class mapCode{
         this.curMapCode = "0d00"
     }
     async initMapCodes() {
-        console.log("Start initServerCode");
+        toolbarLog("开始初始化地图代码")
         try {
-            // for (let i = 0; i <= 7; i++) {
-            //     const url = `https://api.n.m28.io/endpoint/florrio-map-${i}-green/findEach/`;
-            //     const response = await axios.get(url);
-            //     const data = response.data;
-            //     const servers = data.servers;
-            //     for (const serverKey in servers) {
-            //         if (servers.hasOwnProperty(serverKey)) {
-            //             const serverId = servers[serverKey].id;
-            //             this.code2idx.set(serverId, i+1);
-            //         }
-            //     }
-            // }// 创建所有请求的 Promise 数组
             const requests = [];
             for (let i = 0; i <= 7; i++) {
                 const url = `https://api.n.m28.io/endpoint/florrio-map-${i}-green/findEach/`;
@@ -49,8 +38,10 @@ class mapCode{
                     }
                 }
             }
+            toolbarLog("初始化地图代码成功");
             console.log("Succ Init Map:",this.code2idx);
         } catch (error) {
+            toolbarLog("初始化地图代码失败");
             console.error("Init MapCode Error:", error.message);
         }
     }

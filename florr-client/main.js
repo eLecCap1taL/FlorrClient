@@ -1,6 +1,7 @@
-const { app, BrowserWindow, globalShortcut } = require('electron');
+const { app, BrowserWindow, globalShortcut,ipcMain } = require('electron');
 const path = require("path");
 const mapCode = require('./mapCode')
+const { createToolbarWindow,setMainQuited,toolbarLog,toolbarUpdMapCode } = require('./_window_toolbar');
 
 let mainWindow;
 
@@ -13,6 +14,9 @@ function processLog(logMsg){
 
     if(match){
         mapcode.updCurMapCode(match[1]);
+        // toolbarLog("连接到新服务器")
+        toolbarUpdMapCode(match[1])
+        // toolbarCMD("setCurMapCode("+match[1]+")");
         return ;
     }
 }
@@ -32,13 +36,39 @@ app.whenReady().then(async () => {
     mainWindow.setMenu(null);
     mainWindow.loadURL("https://florr.io");
 
+    //加载工具栏窗口
+    toolbarWindow = createToolbarWindow();
+
     // 注册快捷键以切换开发者工具
     globalShortcut.register('CommandOrControl+Shift+I', () => {
         mainWindow.webContents.toggleDevTools();
     });
+    globalShortcut.register('CommandOrControl+Shift+K', () => {
+        // mainWindow.webContents.toggleDevTools();
+        // console.log('123')
+        if(toolbarWindow && !toolbarWindow.isDestroyed())
+            if(toolbarWindow.isVisible()){
+                toolbarWindow.hide();
+                console.log('hide');
+            }else{
+                toolbarWindow.show();
+                console.log('show');
+            }
+        else{
+            toolbarWindow = createToolbarWindow();
+            console.log('build');
+        }
+    });
 
     //地图代码初始化
     await mapcode.initMapCodes();
+
+    // 处理地图代码更新请求
+    ipcMain.on('updMapCode', async () => {
+        console.log('upd map code...');
+        await mapcode.initMapCodes();
+        console.log('upd map code done');
+    });
 
     // 拦截所有 HTTP/HTTPS 请求
     // const httpFilter = { urls: ['http://*/*', 'https://*/*'] };
@@ -98,6 +128,16 @@ app.whenReady().then(async () => {
         // if (method === "Network.webSocketFrameSent") {
         //     console.log("WebSocket 数据发送:", params.response.payloadData);
         // }
+    });
+
+    //主窗口强制退出程序
+    mainWindow.on('closed', () => {
+        if (toolbarWindow && !toolbarWindow.isDestroyed()) {
+            setMainQuited();
+            toolbarWindow.close(); // 关闭额外窗口
+        }
+        mainWindow = null; // 清理引用
+        app.quit(); // 强制退出程序
     });
 });
 

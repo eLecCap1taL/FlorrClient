@@ -1,0 +1,48 @@
+<!-- extra.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Florr Client Tools</title><style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 5px;
+        }
+        #logBox {
+            width: 80%;
+            height: 200px;
+            margin-top: 10px;
+            padding: 5px;
+            font-family: monospace;
+            resize: none; /* 禁止调整大小 */
+            overflow-y: auto; /* 自动滚动 */
+        }
+
+        hr {
+            border: 1px solid #ccc;
+            /* width: 50%; */
+            margin: 10px auto;
+        }
+    </style>
+</head>
+<body>
+    <button id="updMapCode">刷新地图服务器代码</button>
+    <div id="server-info">
+        玩家所处服务器ID: <span id="server-id">尚未连接到任何服务器</span>
+    </div>    
+    <hr>
+    <label>Florr Client 日志</label>
+    <textarea id="logBox" readonly></textarea> <!-- 日志框 -->
+
+    <script src="./_window_toolbar_render.js"></script>
+</body>
+</html>
