@@ -24,6 +24,6 @@ florr-client/*.tmp
 # VSCode / IDE 配置
 .vscode/
 
-florr-client/betterflorr.js
+betterflorr.js
 
 # .gitignore
