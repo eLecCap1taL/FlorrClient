@@ -9,6 +9,7 @@ class mapCode{
     }
     async initMapCodes() {
         toolbarLog("开始初始化地图代码")
+        console.log("Start GET mapCodes")
         try {
             const requests = [];
             for (let i = 0; i <= 7; i++) {

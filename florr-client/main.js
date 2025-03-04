@@ -4,7 +4,7 @@ const mapCode = require('./mapCode')
 const { createToolbarWindow,setMainQuited,toolbarLog,toolbarUpdMapCode } = require('./_window_toolbar');
 
 let mainWindow;
-
+// let initCompleted = false
 let mapcode=new mapCode()
 
 function processLog(logMsg){
@@ -13,8 +13,8 @@ function processLog(logMsg){
     match = logMsg.match(/^Connecting to ([a-z0-9]+)\../)
 
     if(match){
-        mapcode.updCurMapCode(match[1]);
         // toolbarLog("连接到新服务器")
+        mapcode.updCurMapCode(match[1]);
         toolbarUpdMapCode(match[1])
         // toolbarCMD("setCurMapCode("+match[1]+")");
         return ;
@@ -38,6 +38,7 @@ app.whenReady().then(async () => {
 
     //加载工具栏窗口
     toolbarWindow = createToolbarWindow();
+    // toolbarWindow.hide()
 
     // 注册快捷键以切换开发者工具
     globalShortcut.register('CommandOrControl+Shift+I', () => {
@@ -60,15 +61,7 @@ app.whenReady().then(async () => {
         }
     });
 
-    //地图代码初始化
-    await mapcode.initMapCodes();
-
-    // 处理地图代码更新请求
-    ipcMain.on('updMapCode', async () => {
-        console.log('upd map code...');
-        await mapcode.initMapCodes();
-        console.log('upd map code done');
-    });
+    // initCompleted = true;
 
     // 拦截所有 HTTP/HTTPS 请求
     // const httpFilter = { urls: ['http://*/*', 'https://*/*'] };
@@ -87,6 +80,8 @@ app.whenReady().then(async () => {
     //     console.log('WebSocket 请求发起:', details.url);
     //     callback({ cancel: false });
     // });
+
+
 
     // 使用 debugger 捕获详细网络数据
     mainWindow.webContents.debugger.attach("1.3");
@@ -130,14 +125,22 @@ app.whenReady().then(async () => {
         // }
     });
 
-    //主窗口强制退出程序
+    // 主窗口强制退出程序
     mainWindow.on('closed', () => {
         if (toolbarWindow && !toolbarWindow.isDestroyed()) {
             setMainQuited();
-            toolbarWindow.close(); // 关闭额外窗口
+            toolbarWindow.destroy(); // 关闭额外窗口
         }
         mainWindow = null; // 清理引用
         app.quit(); // 强制退出程序
+    });
+
+    //地图代码初始化
+    await mapcode.initMapCodes();
+
+    // 处理地图代码更新请求
+    ipcMain.on('updMapCode', async () => {
+        await mapcode.initMapCodes();
     });
 });
 
