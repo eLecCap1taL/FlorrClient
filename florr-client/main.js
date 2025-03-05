@@ -55,11 +55,11 @@ function keyEventRegister() {
     });
 
     mainWindow.on('focus', () => {
-        globalShortcut.register('E', () => { });
-        globalShortcut.register('Q', () => { });
+        if(EQlock)  globalShortcut.register('E', () => { });
+        if(EQlock)  globalShortcut.register('Q', () => { });
     });
-    globalShortcut.register('E', () => { });
-    globalShortcut.register('Q', () => { });
+    if(EQlock)  globalShortcut.register('E', () => { });
+    if(EQlock)  globalShortcut.register('Q', () => { });
     uIOhook.on('keydown', (e) => {
         if (e.keycode === UiohookKey.E) {
             if (!EQlock) mainWindow.webContents.sendInputEvent({ type: 'keyDown', keyCode: 'E' });
@@ -88,6 +88,14 @@ function keyEventRegister() {
         mainWindow.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'E' });
         mainWindow.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'Q' });
         EQlock = status
+        if(status==0){
+            globalShortcut.unregister('E');
+            globalShortcut.unregister('Q');
+        }
+        if(status==1 && mainWindow.isFocused()){
+            globalShortcut.register('E', () => { });
+            globalShortcut.register('Q', () => { });
+        }
     })
 }
 
