@@ -138,6 +138,107 @@
             border: 1px solid #ccc;
             /* 轻微边框区分 */
         }
+        #features {
+            display: flex;
+            justify-content: center;
+            width: 80%;
+            gap: 20px; /* 两列间距 */
+            margin: 10px 0;
+        }
+
+        .feature-column {
+            display: flex;
+            flex-direction: column;
+            width: 50%;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+
+        .feature-item label {
+            font-size: 14px;
+            color: #555;
+            margin-right: 10px;
+            flex-grow: 1; /* 标签占满剩余空间 */
+        }
+
+        .feature-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #17a2b8; /* 与按钮青色一致 */
+            cursor: pointer;
+        }
+        .feature-item input[type="button"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #17a2b8; /* 与按钮青色一致 */
+            cursor: pointer;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* 黑色滤镜 */
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            opacity: 0; /* 初始透明 */
+            transition: opacity 0.3s ease; /* 淡入淡出 */
+        }
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1; /* 显示时完全不透明 */
+        }
+
+        .modal-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            width: 300px;
+            text-align: center;
+            transform: scale(0.8); /* 初始缩放 */
+            transition: transform 0.3s ease; /* 缩放动画 */
+        }
+        .modal-overlay.active .modal-card {
+            transform: scale(1); /* 显示时正常大小 */
+        }
+
+        #modalTitle {
+            font-size: 16px;
+            color: #333;
+            margin: 0 0 15px 0;
+        }
+
+        .modal-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #modalInput {
+            width: 80%;
+            padding: 6px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        #modalConfirm {
+            padding: 6px 12px;
+            font-size: 14px;
+            background: #0078d4;
+            color: white;
+            white-space: nowrap; /* 文字横向单行 */
+        }
     </style>
 </head>
 
@@ -149,19 +250,45 @@
         <div><span style="display: inline-block; width: 80px;">Desert</span>:</div>
         <div><span style="display: inline-block; width: 80px;">Ocean</span>:</div>
         <div><span style="display: inline-block; width: 80px;">Jungle</span>:</div>
+        <div><span style="display: inline-block; width: 80px;">AntHell</span>:</div>
         <div><span style="display: inline-block; width: 80px;">Hel</span>:</div>
         <div><span style="display: inline-block; width: 80px;">Sewers</span>:</div>
-        <div><span style="display: inline-block; width: 80px;">AntHell</span>:</div>
+        <div><span style="display: inline-block; width: 80px;">Factory</span>:</div>
     </div>
     <div id="server-info">
         玩家所处服务器ID: <span id="server-id">尚未连接到任何服务器</span>
     </div>
+    <hr>
+        <div id="features">
+            <div class="feature-column">
+                <div class="feature-item">
+                    <label for="lockEQ">锁定EQ</label>
+                    <input type="checkbox" id="lockEQ">
+                </div>
+                <!-- 后续功能可添加在此 -->
+            </div>
+            <div class="feature-column">
+                <div class="feature-item">
+                    <label for="setEQ">设定花瓣旋转速度</label>
+                    <input type="button" id="setEQ">
+                </div>
+            </div>
+        </div>
     <hr>
     <div style="display: flex; align-items: center; margin-bottom: 5px;">
         <label>Florr Client 日志</label>
         <button id="clearLogButton">清空日志</button>
     </div>
     <textarea id="logBox" readonly></textarea>
+    <div id="modalOverlay" class="modal-overlay">
+        <div id="modalCard" class="modal-card">
+            <h3 id="modalTitle"></h3>
+            <div class="modal-input-group">
+                <input type="text" id="modalInput" class="modal-input">
+                <button id="modalConfirm">确认</button>
+            </div>
+        </div>
+    </div>
 
     <script src="./_window_toolbar_render.js"></script>
 </body>

@@ -28,14 +28,15 @@ musicStyle.addEventListener('change', () => {
 
 resetButton.addEventListener('click', () => {
     musicStyle.value = 'terraria';
-    volumeSlider.value = 30;
-    volumeInput.value = 30;
+    volumeSlider.value = 20;
+    volumeInput.value = 20;
 
     player.src = ''
     curmusic.textContent = ''
     player.currentTime = 0
     player.volume = volumeSlider.value / 100.0;
     player.pause();
+    window.myAPI.updMapCode();
     window.myAPI.changeMusicKit(musicStyle.value);
 });
 
@@ -71,7 +72,7 @@ window.myAPI.onSetPause((val) => {
 
 
 player.src = ''
-player.valume = 0.3
+player.valume = 0.2
 player.loop = true
 curmusic.textContent = ''
 player.pause()

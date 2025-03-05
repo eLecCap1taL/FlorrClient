@@ -1,35 +1,118 @@
-const { app, BrowserWindow, globalShortcut,ipcMain } = require('electron');
+const { app, BrowserWindow, globalShortcut, ipcMain } = require('electron');
 const path = require("path");
 const mapCode = require('./mapCode')
-const { createToolbarWindow,toolbarLog,toolbarUpdMapCode, _toolbar_setMainQuited } = require('./_window_toolbar');
-const { createMusicWindow ,_music_setMainQuited, changeBGM,setPause,playSound} = require('./_window_music');
+const { createToolbarWindow, toolbarLog, toolbarUpdMapCode, _toolbar_setMainQuited } = require('./_window_toolbar');
+const { createMusicWindow, _music_setMainQuited, changeBGM, setPause, playSound } = require('./_window_music');
 // const sound = require("sound-play")
+const { uIOhook, UiohookKey } = require('uiohook-napi');
 
 let mainWindow;
 // let initCompleted = false
-let mapcode=new mapCode()
-let bosshide=false
-let toolbarhide=true
-let musichide=true
+let mapcode = new mapCode()
+let bosshide = false
+let toolbarhide = true
+let musichide = true
+// let tmp = false
+let store
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// const store = new Store({
+//     defaults: {
+//         lockEQ: false,
+//         musicKit: 'terraria',
+//         musicVolume: 0.2,
+//         serverListVisible: false // 服务器列表可见性
+//     }
+// });
 
 //处理日志
-function processLog(logMsg){
+function processLog(logMsg) {
     console.log("florr.io Console:", logMsg);
 
     match = logMsg.match(/^Connecting to ([a-z0-9]+)\../)
 
-    if(match){
+    if (match) {
         // toolbarLog("连接到新服务器")
         mapcode.updCurMapCode(match[1]);
         toolbarUpdMapCode(match[1])
         changeBGM(mapcode.getMapByCode(match[1]));
         // toolbarCMD("setCurMapCode("+match[1]+")");
-        return ;
+        return;
     }
+}
+
+//按键事件管理
+let EQlock = false
+let Kpressed = false
+let Lpressed = false
+function keyEventRegister() {
+    mainWindow.on('blur', () => {
+        globalShortcut.unregister('E');
+        globalShortcut.unregister('Q');
+    });
+
+    mainWindow.on('focus', () => {
+        globalShortcut.register('E', () => { });
+        globalShortcut.register('Q', () => { });
+    });
+    globalShortcut.register('E', () => { });
+    globalShortcut.register('Q', () => { });
+    uIOhook.on('keydown', (e) => {
+        if (e.keycode === UiohookKey.E) {
+            if (!EQlock) mainWindow.webContents.sendInputEvent({ type: 'keyDown', keyCode: 'E' });
+        }
+        if (e.keycode === UiohookKey.Q) {
+            if (!EQlock) mainWindow.webContents.sendInputEvent({ type: 'keyDown', keyCode: 'Q' });
+        }
+        if (e.keycode === UiohookKey.K) Kpressed = 1;
+        if (e.keycode === UiohookKey.L) Lpressed = 1;
+        if (e.keycode >= UiohookKey['1'] && e.keycode <= UiohookKey['0'] && (Kpressed || Lpressed) && mainWindow.isFocused()) playSound(`./music/equip${Math.floor(Math.random() * 6)}.mp3`);
+    });
+    uIOhook.on('keyup', (e) => {
+        if (e.keycode === UiohookKey.E) {
+            if (!EQlock) mainWindow.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'E' });
+        }
+        if (e.keycode === UiohookKey.Q) {
+            if (!EQlock) mainWindow.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'Q' });
+        }
+        if (e.keycode === UiohookKey.K) Kpressed = 0;
+        if (e.keycode === UiohookKey.L) Lpressed = 0;
+    });
+
+    ipcMain.on('_updEQlock', (_event, status) => {
+        // console.log(status);
+        mainWindow.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'E' });
+        mainWindow.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'Q' });
+        EQlock = status
+    })
+}
+
+//设定转速
+async function setFlorrEQ(val) {
+    mainWindow.webContents.sendInputEvent({ type: 'keyDown', keyCode: 'E' });
+    await sleep(1000)
+    mainWindow.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'E' });
+    if (val == 1.0) return;
+    mainWindow.webContents.sendInputEvent({ type: 'keyDown', keyCode: 'Q' });
+    await sleep(Math.floor(1000.0 * ((1.0 - val) / 0.7)));
+    mainWindow.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'Q' });
 }
 
 //Main
 app.whenReady().then(async () => {
+    const Store = (await import('electron-store')).default;
+    store = new Store({
+        defaults: {
+            lockEQ: false,
+            musicKit: 'terraria',
+            musicVolume: 0.2,
+            serverListVisible: false
+        }
+    });
+
     mainWindow = new BrowserWindow({
         width: 1280,
         height: 720,
@@ -57,66 +140,77 @@ app.whenReady().then(async () => {
         mainWindow.webContents.toggleDevTools();
     });
     //工具栏
-    globalShortcut.register('CommandOrControl+Shift+K', () => {
-        if(bosshide)    return ;
+    globalShortcut.register('CommandOrControl+K', () => {
+        if (bosshide) return;
         playSound('./music/click.mp3');
-        if(toolbarWindow && !toolbarWindow.isDestroyed())
-            if(toolbarWindow.isVisible()){
+        if (toolbarWindow && !toolbarWindow.isDestroyed())
+            if (toolbarWindow.isVisible()) {
                 toolbarWindow.hide();
                 console.log('hide-tools');
-                toolbarhide=true
-            }else{
+                toolbarhide = true
+            } else {
                 toolbarWindow.show();
                 console.log('show-tools');
-                toolbarhide=false
+                toolbarhide = false
             }
-        else{
+        else {
             toolbarWindow = createToolbarWindow();
             console.log('build-tools');
-            toolbarhide=false
+            toolbarhide = false
         }
     });
     //音乐栏
-    globalShortcut.register('CommandOrControl+Shift+M', () => {
-        if(bosshide)    return ;
+    globalShortcut.register('CommandOrControl+M', () => {
+        if (bosshide) return;
         playSound('./music/click.mp3');
-        if(musicWindow && !musicWindow.isDestroyed())
-            if(musicWindow.isVisible()){
+        if (musicWindow && !musicWindow.isDestroyed())
+            if (musicWindow.isVisible()) {
                 musicWindow.hide();
                 console.log('hide-music');
-            }else{
+            } else {
                 musicWindow.show();
                 console.log('show-music');
             }
-        else{
+        else {
             musicWindow = createMusicWindow();
             console.log('build-music');
         }
     });
 
-    // sound.play("https://attachment.0sm.com/node0/2023/06/86482692BC432E40-b2e2bb0bdf9ad133.mp3");
     //一键隐藏游戏
     globalShortcut.register('Alt+X', () => {
         playSound('./music/click.mp3');
-        if(mainWindow.isVisible()){
-            bosshide=true
-            toolbarhide=!toolbarWindow.isVisible();
-            musichide=!musicWindow.isVisible();
+        if (mainWindow.isVisible()) {
+            bosshide = true
+            toolbarhide = !toolbarWindow.isVisible();
+            musichide = !musicWindow.isVisible();
             mainWindow.hide();
             toolbarWindow.hide();
             musicWindow.hide();
             setPause(1);
             toolbarLog("Florr Client 已隐藏")
-        }else{
-            bosshide=false
+        } else {
+            bosshide = false
             mainWindow.show();
-            if(!toolbarhide)    toolbarWindow.show();
-            if(!musichide)      musicWindow.show();
+            if (!toolbarhide) toolbarWindow.show();
+            if (!musichide) musicWindow.show();
             setPause(0);
             toolbarLog("Florr Client 已显示")
         }
-        
+
     });
+
+
+    globalShortcut.register('Alt+E', async () => {
+        console.log("begin")
+        await setFlorrEQ(0.65);
+        console.log("end");
+    })
+
+    //uIOhook监听
+    uIOhook.start();
+    //按键事件管理
+    keyEventRegister();
 
     // initCompleted = true;
 
@@ -138,7 +232,42 @@ app.whenReady().then(async () => {
     //     callback({ cancel: false });
     // });
 
-
+    // mainWindow.webContents.on('did-finish-load', async () => {
+    //     if(tmp) return ;
+    //     tmp=1
+    //     await sleep(1000)
+    //     console.log(5)
+    //     await sleep(1000)
+    //     console.log(4)
+    //     await sleep(1000)
+    //     console.log(3)
+    //     await sleep(1000)
+    //     console.log(2)
+    //     await sleep(1000)
+    //     console.log(1)
+    //     await sleep(10000)
+    //     try {
+    //         await mainWindow.webContents.executeJavaScript(`
+    //             const tracked = {};
+    //             for (const key in window) {
+    //                 if (typeof window[key] === 'object' && 
+    //                     window[key] && 
+    //                     key !== 'location' && 
+    //                     key !== 'document') { // 排除特殊对象
+    //                     window[key] = new Proxy(window[key], {
+    //                         set(target, prop, value) {
+    //                             console.log('Change in ' + key + '.' + prop + ': ', value);
+    //                             return Reflect.set(target, prop, value);
+    //                         }
+    //                     });
+    //                 }
+    //             }
+    //         `);
+    //     } catch (error) {
+    //         console.error('fail:', error.message);
+    //         // mainWindow.webContents.openDevTools();
+    //     }
+    // });
 
     // 使用 debugger 捕获详细网络数据
     mainWindow.webContents.debugger.attach("1.3");
@@ -198,13 +327,19 @@ app.whenReady().then(async () => {
 
     //地图代码初始化
     await mapcode.initMapCodes();
-    toolbarWindow.webContents.send('setMapCodeList',[...mapcode.code2idx]);
+    toolbarWindow.webContents.send('setMapCodeList', [...mapcode.code2idx]);
 
     // 处理地图代码更新请求
     ipcMain.on('_updMapCode', async () => {
         await mapcode.initMapCodes();
-        toolbarWindow.webContents.send('setMapCodeList',[...mapcode.code2idx]);
+        toolbarWindow.webContents.send('setMapCodeList', [...mapcode.code2idx]);
     });
+
+    //处理转速设定请求
+    ipcMain.on('_setFlorrEQ', async (_event, val) => {
+        // console.log(val);
+        setFlorrEQ(val);
+    })
 });
 
 app.on('will-quit', () => {

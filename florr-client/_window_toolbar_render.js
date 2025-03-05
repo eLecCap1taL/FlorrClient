@@ -3,6 +3,8 @@ const logBox = document.getElementById('logBox');
 const curmaptext = document.getElementById('server-id');
 const toggleButton = document.getElementById('toggleServerList');
 const serverList = document.getElementById('serverList');
+const lockEQCheckbox = document.getElementById('lockEQ');
+const setEQButton = document.getElementById('setEQ');
 
 //日志追加
 function appendLog(message) {
@@ -20,6 +22,48 @@ function applyGlow(target, color = 'rgba(0, 255, 0, 0.7)', duration = 1000) {
     }, duration);
 }
 
+//输入层
+async function getInput(promptText, defaultValue = '', returnDefaultIfEmpty = false) {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById('modalOverlay');
+        const title = document.getElementById('modalTitle');
+        const input = document.getElementById('modalInput');
+        const confirm = document.getElementById('modalConfirm');
+
+        // 设置内容并显示
+        title.textContent = promptText;
+        input.value = defaultValue;
+        overlay.style.display = 'flex';
+        setTimeout(() => overlay.classList.add('active'), 10);
+
+        // 确认按钮事件
+        const confirmHandler = () => {
+            const value = input.value.trim();
+            const result = value === '' && returnDefaultIfEmpty ? defaultValue : value;
+            resolve(result); // 立即返回
+            overlay.classList.remove('active');
+            setTimeout(() => overlay.style.display = 'none', 300); // 动画结束后隐藏
+            confirm.removeEventListener('click', confirmHandler);
+        };
+        confirm.addEventListener('click', confirmHandler);
+
+        // 回车键支持
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') confirmHandler();
+        });
+    });
+}
+
+//设定转速
+setEQButton.addEventListener('click', async () => {
+    ret = parseFloat(await getInput('请输入转速 - 0.3到1.0之间的任意小数',1.0,true))
+    if(!Number.isFinite(ret))   ret=1.0
+    if(ret>1.0) ret=1.0
+    if(ret<0.3) ret=0.3
+    window.myAPI.setFlorrEQ(ret)
+    appendLog(`设置转速为 ${ret*100.0}%`)
+});
+
 //清空日志
 document.getElementById('clearLogButton').addEventListener('click', () => {
     logBox.value = '';
@@ -35,9 +79,17 @@ toggleButton.addEventListener('click', () => {
     // appendLog(isServerListVisible ? '显示服务器列表' : '隐藏服务器列表');
 });
 
+//EQ锁定复选框
+lockEQCheckbox.addEventListener('change', () => {
+    const isLocked = lockEQCheckbox.checked;
+    applyGlow(lockEQCheckbox,'rgba(0, 255, 0, 0.7)',500)
+    appendLog(`锁定EQ: ${isLocked ? '启用' : '禁用'}`);
+    window.myAPI.updEQlock(isLocked);
+});
+
 //请求刷新服务器列表
 document.getElementById('_updMapCode').addEventListener('click', () => {
-    serverList.innerHTML = '<div><span style="display: inline-block; width: 80px;">Garden</span>:</div><div><span style="display: inline-block; width: 80px;">Desert</span>:</div><div><span style="display: inline-block; width: 80px;">Ocean</span>:</div><div><span style="display: inline-block; width: 80px;">Jungle</span>:</div><div><span style="display: inline-block; width: 80px;">Hel</span>:</div><div><span style="display: inline-block; width: 80px;">Sewers</span>:</div><div><span style="display: inline-block; width: 80px;">AntHell</span>:</div>';
+    serverList.innerHTML = '<div><span style="display: inline-block; width: 80px;">Garden</span>:</div><div><span style="display: inline-block; width: 80px;">Desert</span>:</div><div><span style="display: inline-block; width: 80px;">Ocean</span>:</div><div><span style="display: inline-block; width: 80px;">Jungle</span>:</div><div><span style="display: inline-block; width: 80px;">AntHell</span>:</div><div><span style="display: inline-block; width: 80px;">Hel</span>:</div><div><span style="display: inline-block; width: 80px;">Sewers</span>:</div><div><span style="display: inline-block; width: 80px;">Factory</span>:</div>';
     const target = isServerListVisible ? serverList : toggleButton;
     applyGlow(target, 'rgba(255, 255, 0, 0.7)', 800);
     window.myAPI.updMapCode(); // 发送刷新请求
@@ -60,7 +112,7 @@ window.myAPI.onUpdMapCodeList((serverData) => {
     });
     const idx2map = ["Unknown", "Garden", "Desert", "Ocean", "Jungle", "AntHell","Hel", "Sewers" , "Factory"];
     serverList.innerHTML = '';
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 8; i++) {
         const div = document.createElement('div');
         div.innerHTML = `<span style="display: inline-block; width: 80px;">${idx2map[i + 1]}</span>: ${mapServers[i].join(' ')}`;
         serverList.appendChild(div);

@@ -25,5 +25,6 @@ florr-client/*.tmp
 .vscode/
 
 betterflorr.js
+source.js
 
 # .gitignore
