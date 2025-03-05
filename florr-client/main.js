@@ -1,8 +1,8 @@
 const { app, BrowserWindow, globalShortcut, ipcMain } = require('electron');
 const path = require("path");
 const mapCode = require('./mapCode')
-const { createToolbarWindow, toolbarLog, toolbarUpdMapCode, _toolbar_setMainQuited } = require('./_window_toolbar');
-const { createMusicWindow, _music_setMainQuited, changeBGM, setPause, playSound } = require('./_window_music');
+const { createToolbarWindow, toolbarLog, toolbarUpdMapCode, _toolbar_setMainQuited ,_toolbar_window_init} = require('./_window_toolbar');
+const { createMusicWindow, _music_setMainQuited, changeBGM, setPause, playSound,_music_window_init } = require('./_window_music');
 // const sound = require("sound-play")
 const { uIOhook, UiohookKey } = require('uiohook-napi');
 
@@ -82,6 +82,7 @@ function keyEventRegister() {
         if (e.keycode === UiohookKey.L) Lpressed = 0;
     });
 
+    //EQlock更新
     ipcMain.on('_updEQlock', (_event, status) => {
         // console.log(status);
         mainWindow.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'E' });
@@ -101,8 +102,13 @@ async function setFlorrEQ(val) {
     mainWindow.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'Q' });
 }
 
+function _main_init(_EQlock){
+    EQlock=_EQlock
+}
+
 //Main
 app.whenReady().then(async () => {
+    //设置存储
     const Store = (await import('electron-store')).default;
     store = new Store({
         defaults: {
@@ -134,6 +140,15 @@ app.whenReady().then(async () => {
     //加载音乐栏窗口
     musicWindow = createMusicWindow();
     musicWindow.hide()
+
+    //初始化存储
+    _main_init(store.get('lockEQ'));
+    _music_window_init(store.get('musicKit'),store.get('musicVolume'))
+    _toolbar_window_init(store.get('lockEQ'),store.get('serverListVisible'))
+    ipcMain.on('_changeSettings',async (_event,ls)=>{
+        store.set(ls[0],ls[1]);
+        console.log(`set ${ls[0]} to ${ls[1]}`);
+    })
 
     //开发者工具快捷键
     globalShortcut.register('CommandOrControl+Shift+I', () => {

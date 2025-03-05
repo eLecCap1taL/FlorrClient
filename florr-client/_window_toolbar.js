@@ -13,6 +13,11 @@ function toolbarUpdMapCode(mapcode){
     toolbarWindow.webContents.send('setCurMapCode',mapcode)
 }
 
+function _toolbar_window_init(_EQlock,_serverListVisible){
+
+    toolbarWindow.webContents.send('_init',[_EQlock,_serverListVisible]);
+}
+
 function createToolbarWindow() {
     const toolbarWindow = new BrowserWindow({
         width: 500,
@@ -47,4 +52,4 @@ function createToolbarWindow() {
     return toolbarWindow;
 }
 
-module.exports = { createToolbarWindow ,_toolbar_setMainQuited,toolbarLog,toolbarUpdMapCode};
+module.exports = { createToolbarWindow ,_toolbar_setMainQuited,toolbarLog,toolbarUpdMapCode,_toolbar_window_init};

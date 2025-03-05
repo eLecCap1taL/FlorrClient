@@ -9,12 +9,14 @@ const curmusic = document.getElementById('music-id');
 volumeSlider.addEventListener('input', () => {
     volumeInput.value = volumeSlider.value;
     player.volume = volumeSlider.value / 100.0;
+    window.myAPI.changeSettings(['musicVolume',volumeInput.value/100.0]);
 });
 volumeInput.addEventListener('input', () => {
     if (volumeInput.value < 0) volumeInput.value = 0;
     if (volumeInput.value > 100) volumeInput.value = 100;
     volumeSlider.value = volumeInput.value;
     player.volume = volumeSlider.value / 100.0;
+    window.myAPI.changeSettings(['musicVolume',volumeInput.value/100.0]);
 });
 
 musicStyle.addEventListener('change', () => {
@@ -24,6 +26,7 @@ musicStyle.addEventListener('change', () => {
     player.volume = volumeSlider.value / 100.0;
     player.pause();
     window.myAPI.changeMusicKit(musicStyle.value);
+    window.myAPI.changeSettings(['musicKit',musicStyle.value]);
 });
 
 resetButton.addEventListener('click', () => {
@@ -37,6 +40,8 @@ resetButton.addEventListener('click', () => {
     player.volume = volumeSlider.value / 100.0;
     player.pause();
     window.myAPI.updMapCode();
+    window.myAPI.changeSettings(['musicKit',musicStyle.value]);
+    window.myAPI.changeSettings(['musicVolume',volumeInput.value/100.0]);
     window.myAPI.changeMusicKit(musicStyle.value);
 });
 
@@ -76,3 +81,12 @@ player.valume = 0.2
 player.loop = true
 curmusic.textContent = ''
 player.pause()
+
+window.myAPI.onInit((ls)=>{
+    _musicKit=ls[0]
+    _musicVolume=ls[1]
+    musicStyle.value = _musicKit;
+    volumeInput.value=Math.floor(_musicVolume*100);
+    volumeSlider.value=Math.floor(_musicVolume*100);
+    player.volume = volumeSlider.value / 100.0;
+})

@@ -5,5 +5,8 @@ contextBridge.exposeInMainWorld('myAPI', {
     updMapCode: () => ipcRenderer.send('_updMapCode'),
     onSetMusic: (callback) => ipcRenderer.on('setMusic', (_event, value) => callback(value)),
     onSetPause: (callback) => ipcRenderer.on('setPause', (_event, value) => callback(value)),
-    onPlaySound: (callback) => ipcRenderer.on('playSound', (_event, value) => callback(value))
+    onPlaySound: (callback) => ipcRenderer.on('playSound', (_event, value) => callback(value)),
+    
+    onInit: (callback) => ipcRenderer.on('_init', (_event, value) => callback(value)),
+    changeSettings: (value) => ipcRenderer.send('_changeSettings',value)
 })

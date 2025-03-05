@@ -33,6 +33,12 @@ function setPause(val){
     musicWindow.webContents.send('setPause',val);
 }
 
+function _music_window_init(_kit,_volume){
+    kit=_kit
+    // console.log(_kit);
+    musicWindow.webContents.send('_init',[_kit,_volume]);
+}
+
 function createMusicWindow() {
     const musicWindow = new BrowserWindow({
         width: 400,
@@ -70,4 +76,4 @@ function playSound(spath){
     musicWindow.webContents.send('playSound',spath);
 }
 
-module.exports = { createMusicWindow ,_music_setMainQuited,changeBGM,setPause,_music_getLstMap,playSound};
+module.exports = { createMusicWindow ,_music_setMainQuited,changeBGM,setPause,_music_getLstMap,playSound,_music_window_init};

@@ -6,5 +6,9 @@ contextBridge.exposeInMainWorld('myAPI', {
     setFlorrEQ: (val) => ipcRenderer.send('_setFlorrEQ',val),
     onUpdMapCodeList: (callback) => ipcRenderer.on('setMapCodeList', (_event, value) => callback(value)),
     onLog: (callback) => ipcRenderer.on('log', (_event, value) => callback(value)),
-    onSetCurMapCode: (callback) => ipcRenderer.on('setCurMapCode', (_event, value) => callback(value))
+    onSetCurMapCode: (callback) => ipcRenderer.on('setCurMapCode', (_event, value) => callback(value)),
+    
+    onInit: (callback) => ipcRenderer.on('_init', (_event, value) => callback(value)),
+    changeSettings: (value) => ipcRenderer.send('_changeSettings',value)
 })
+

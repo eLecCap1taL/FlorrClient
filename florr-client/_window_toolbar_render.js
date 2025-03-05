@@ -76,7 +76,7 @@ toggleButton.addEventListener('click', () => {
     isServerListVisible = !isServerListVisible;
     serverList.style.display = isServerListVisible ? 'block' : 'none';
     toggleButton.textContent = isServerListVisible ? '隐藏完整服务器列表' : '显示完整服务器列表';
-    // appendLog(isServerListVisible ? '显示服务器列表' : '隐藏服务器列表');
+    window.myAPI.changeSettings(['serverListVisible',isServerListVisible]);
 });
 
 //EQ锁定复选框
@@ -85,6 +85,7 @@ lockEQCheckbox.addEventListener('change', () => {
     applyGlow(lockEQCheckbox,'rgba(0, 255, 0, 0.7)',500)
     appendLog(`锁定EQ: ${isLocked ? '启用' : '禁用'}`);
     window.myAPI.updEQlock(isLocked);
+    window.myAPI.changeSettings(['lockEQ',lockEQCheckbox.checked]);
 });
 
 //请求刷新服务器列表
@@ -120,4 +121,15 @@ window.myAPI.onUpdMapCodeList((serverData) => {
 
     const target = isServerListVisible ? serverList : toggleButton;
     applyGlow(target, 'rgba(0, 255, 0, 0.7)', 800);
+})
+
+window.myAPI.onInit((ls)=>{
+    _EQlock=ls[0]
+    _serverListVisible=ls[1]
+    
+    lockEQCheckbox.checked=_EQlock
+
+    isServerListVisible=_serverListVisible
+    serverList.style.display = _serverListVisible ? 'block' : 'none';
+    toggleButton.textContent = _serverListVisible ? '隐藏完整服务器列表' : '显示完整服务器列表';
 })
