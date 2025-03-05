@@ -7,6 +7,7 @@ const { createMusicWindow, _music_setMainQuited, changeBGM, setPause, playSound,
 const { uIOhook, UiohookKey } = require('uiohook-napi');
 
 let mainWindow;
+let overlayWindow
 // let initCompleted = false
 let mapcode = new mapCode()
 let bosshide = false
@@ -44,6 +45,16 @@ function processLog(logMsg) {
     }
 }
 
+//同步附加层
+function syncOverlay() {
+    const bounds = mainWindow.getBounds();
+    const isFullScreen = mainWindow.isFullScreen();
+    const titleBarHeight = process.platform === 'win32' && !isFullScreen ? 32 : 0; // Windows 标题栏高度
+
+    overlayWindow.setPosition(bounds.x, bounds.y + titleBarHeight);
+    overlayWindow.setSize(bounds.width, bounds.height - titleBarHeight);
+}
+
 //按键事件管理
 let EQlock = false
 let Kpressed = false
@@ -52,11 +63,14 @@ function keyEventRegister() {
     mainWindow.on('blur', () => {
         globalShortcut.unregister('E');
         globalShortcut.unregister('Q');
+        overlayWindow.hide();
     });
 
     mainWindow.on('focus', () => {
         if(EQlock)  globalShortcut.register('E', () => { });
         if(EQlock)  globalShortcut.register('Q', () => { });
+        overlayWindow.show();
+        syncOverlay();
     });
     if(EQlock)  globalShortcut.register('E', () => { });
     if(EQlock)  globalShortcut.register('Q', () => { });
@@ -110,6 +124,45 @@ async function setFlorrEQ(val) {
     mainWindow.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'Q' });
 }
 
+
+//附加层初始化
+function loadOverlayWindow(){
+    // 附加层窗口
+    overlayWindow = new BrowserWindow({
+        width: mainWindow.getBounds().width,
+        height: mainWindow.getBounds().height - 32,
+        x: mainWindow.getBounds().x,
+        y: mainWindow.getBounds().y + 32,
+        frame: false,           // 无边框
+        transparent: true,      // 透明背景
+        alwaysOnTop: true,      // 置顶
+        skipTaskbar: true,      // 不显示在任务栏
+        focusable: false,       // 不可聚焦
+        webPreferences: {
+            nodeIntegration: true, // 允许简单 DOM 操作
+            contextIsolation: false
+        }
+    });
+    overlayWindow.loadFile(path.join(__dirname, 'overlay.html'));
+    overlayWindow.setIgnoreMouseEvents(true);
+
+    // 同步主窗口位置和大小
+    mainWindow.on('move', syncOverlay);
+    mainWindow.on('resize', syncOverlay);
+    mainWindow.on('enter-full-screen', () => syncOverlay());
+    mainWindow.on('leave-full-screen', () => syncOverlay());
+    
+    mainWindow.on('minimize', () => {
+        overlayWindow.hide();
+    });
+    
+    mainWindow.on('restore', () => {
+        overlayWindow.show();
+        syncOverlay();
+    });
+    syncOverlay();
+}
+
 function _main_init(_EQlock){
     EQlock=_EQlock
 }
@@ -140,6 +193,10 @@ app.whenReady().then(async () => {
 
     mainWindow.setMenu(null);
     mainWindow.loadURL("https://florr.io");
+
+    // 附加层窗口
+    loadOverlayWindow();
+
 
     //加载工具栏窗口
     toolbarWindow = createToolbarWindow();
@@ -344,6 +401,7 @@ app.whenReady().then(async () => {
             _music_setMainQuited();
             musicWindow.destroy();
         }
+        overlayWindow.close();
         mainWindow = null;
         app.quit();
     });
