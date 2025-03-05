@@ -21,7 +21,7 @@ function changeBGM(mapname){
     if(kit=='none') return ;
     musicpath = ''
     if(mapname!='Unknown'){
-        musicpath=`file:///music/${kit}/${mapname}.mp3`
+        musicpath=`file://`+path.join(__dirname, 'music', kit, `${mapname}.mp3`)
     }
     console.log(`music switch to ${musicpath}`)
     toolbarLog(`切换音乐为 ${kit} ${mapname}`)
