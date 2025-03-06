@@ -16,7 +16,7 @@ Florr Client 是一个使用 electron 编写的独立 Florr 客户端。旨在�
 
 ## 安装
 
-1. 从 [Releases 页面](https://github.com/eLecCap1taL/florr-client/releases) 下载最新版本。  
+1. 从 [Releases 页面](https://github.com/eLecCap1taL/FlorrClient/releases) 下载最新版本。  
 2. 解压文件并运行 `Florr Client.exe`
 3. 开始使用！  
 
