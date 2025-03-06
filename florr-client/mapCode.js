@@ -1,9 +1,6 @@
 const axios = require('axios');
 const { toolbarLog } = require('./_window_toolbar');
 const { _music_getLstMap, changeBGM } = require('./_window_music');
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
 class mapCode {
     constructor() {
         this.code2idx = new Map();

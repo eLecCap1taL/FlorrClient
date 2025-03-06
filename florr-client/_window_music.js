@@ -65,6 +65,7 @@ function createMusicWindow() {
     musicWindow.on('close', (event) => {
         if(!ifMainQuited){
             event.preventDefault(); // 阻止默认关闭行为
+            playSound('./music/click.mp3');
             musicWindow.hide();
         }
     });

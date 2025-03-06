@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Loadouts Keybinds</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: calc(100vh - 60px); /* 改为最小高度 */
+            height: auto; /* 自适应内容高度 */
+            margin: 20px;
+            padding: 10px 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f0f2f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow-y: auto;
+        }
+
+        h2 {
+            font-size: 18px;
+            color: #333;
+            margin: 10px 0;
+        }
+
+        .section {
+            width: 80%;
+            margin-bottom: 20px;
+        }
+
+        /* 添加底部边距给最后一个 section */
+        .section:last-child {
+            margin-bottom: 40px; /* 增加底部边距 */
+        }
+        .keybind-item, .feature-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            gap: 10px;
+        }
+
+        .keybind-item label, .feature-item label {
+            font-size: 14px;
+            color: #555;
+            width: 200px; /* 固定标签宽度 */
+        }
+
+        .keybind-input {
+            width: 150px; /* 从 120px 增加到 150px */
+            padding: 6px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .keybind-input:focus {
+            border-color: #17a2b8;
+            outline: none;
+        }
+
+        .feature-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #17a2b8;
+            cursor: pointer;
+        }
+
+        hr {
+            border: 0;
+            height: 1px;
+            width: 80%; /* 从 60% 增加到 80% */
+            background: linear-gradient(to right, transparent, #bbb, transparent);
+            margin: 15px auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="section">
+        <h2>套装快捷键</h2>
+        <div class="keybind-item"><label>切换至套装 L+1</label><input type="text" class="keybind-input" id="loadout-0" readonly></div>
+        <div class="keybind-item"><label>切换至套装 L+2</label><input type="text" class="keybind-input" id="loadout-1" readonly></div>
+        <div class="keybind-item"><label>切换至套装 L+3</label><input type="text" class="keybind-input" id="loadout-2" readonly></div>
+        <div class="keybind-item"><label>切换至套装 L+4</label><input type="text" class="keybind-input" id="loadout-3" readonly></div>
+        <div class="keybind-item"><label>切换至套装 L+5</label><input type="text" class="keybind-input" id="loadout-4" readonly></div>
+        <div class="keybind-item"><label>切换至套装 L+6</label><input type="text" class="keybind-input" id="loadout-5" readonly></div>
+        <div class="keybind-item"><label>切换至套装 L+7</label><input type="text" class="keybind-input" id="loadout-6" readonly></div>
+        <div class="keybind-item"><label>切换至套装 L+8</label><input type="text" class="keybind-input" id="loadout-7" readonly></div>
+        <div class="keybind-item"><label>切换至套装 L+9</label><input type="text" class="keybind-input" id="loadout-8" readonly></div>
+        <div class="keybind-item"><label>切换至套装 L+0</label><input type="text" class="keybind-input" id="loadout-9" readonly></div>
+        <div class="keybind-item"><label>切换至套装 K+1</label><input type="text" class="keybind-input" id="loadout-10" readonly></div>
+        <div class="keybind-item"><label>切换至套装 K+2</label><input type="text" class="keybind-input" id="loadout-11" readonly></div>
+        <div class="keybind-item"><label>切换至套装 K+3</label><input type="text" class="keybind-input" id="loadout-12" readonly></div>
+        <div class="keybind-item"><label>切换至套装 K+4</label><input type="text" class="keybind-input" id="loadout-13" readonly></div>
+        <div class="keybind-item"><label>切换至套装 K+5</label><input type="text" class="keybind-input" id="loadout-14" readonly></div>
+        <div class="keybind-item"><label>切换至套装 K+6</label><input type="text" class="keybind-input" id="loadout-15" readonly></div>
+        <div class="keybind-item"><label>切换至套装 K+7</label><input type="text" class="keybind-input" id="loadout-16" readonly></div>
+        <div class="keybind-item"><label>切换至套装 K+8</label><input type="text" class="keybind-input" id="loadout-17" readonly></div>
+        <div class="keybind-item"><label>切换至套装 K+9</label><input type="text" class="keybind-input" id="loadout-18" readonly></div>
+        <div class="keybind-item"><label>切换至套装 K+0</label><input type="text" class="keybind-input" id="loadout-19" readonly></div>
+        <!-- 其他快捷键保持不变 -->
+        <div class="keybind-item"><label>切换至 前一套装</label><input type="text" class="keybind-input" id="loadout-prev" readonly></div>
+        <div class="keybind-item"><label>切换至 后一套装</label><input type="text" class="keybind-input" id="loadout-next" readonly></div>
+        <div class="keybind-item"><label>切换至 上一个使用的套装</label><input type="text" class="keybind-input" id="loadout-last" readonly></div>
+    </div>
+
+    <hr>
+
+    <div class="section">
+        <h2>功能开关</h2>
+        <div class="feature-item">
+            <label>切换套装时播放音效</label>
+            <input type="checkbox" id="play-sound">
+        </div>
+        <div class="feature-item">
+            <label>使用滚轮切换套装</label>
+            <input type="checkbox" id="wheel-switch">
+        </div>
+    </div>
+
+    <script src="./_window_loadouts_render.js">
+    </script>
+</body>
+</html>

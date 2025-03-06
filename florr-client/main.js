@@ -6,8 +6,11 @@ const { createMusicWindow, _music_setMainQuited, changeBGM, setPause, playSound,
 // const sound = require("sound-play")
 const { uIOhook, UiohookKey } = require('uiohook-napi');
 
+const {_loadouts_init,_loadouts_loadstore} = require('./modules/loadouts/loadouts');
+const { _loadouts_window_loadstore } = require('./modules/loadouts/_window_loadouts');
+
 let mainWindow;
-let overlayWindow
+// let overlayWindow
 // let initCompleted = false
 let mapcode = new mapCode()
 let bosshide = false
@@ -46,31 +49,30 @@ function processLog(logMsg) {
 }
 
 //同步附加层
-function syncOverlay() {
-    const bounds = mainWindow.getBounds();
-    const isFullScreen = mainWindow.isFullScreen();
-    const titleBarHeight = process.platform === 'win32' && !isFullScreen ? 32 : 0; // Windows 标题栏高度
+// function syncOverlay() {
+//     const bounds = mainWindow.getBounds();
+//     const isFullScreen = mainWindow.isFullScreen();
+//     const titleBarHeight = process.platform === 'win32' && !isFullScreen ? 32 : 0; // Windows 标题栏高度
 
-    overlayWindow.setPosition(bounds.x, bounds.y + titleBarHeight);
-    overlayWindow.setSize(bounds.width, bounds.height - titleBarHeight);
-}
+//     overlayWindow.setPosition(bounds.x, bounds.y + titleBarHeight);
+//     overlayWindow.setSize(bounds.width, bounds.height - titleBarHeight);
+// }
 
 //按键事件管理
 let EQlock = false
-let Kpressed = false
-let Lpressed = false
 function keyEventRegister() {
     mainWindow.on('blur', () => {
         globalShortcut.unregister('E');
         globalShortcut.unregister('Q');
-        overlayWindow.hide();
+        // overlayWindow.hide();
     });
 
     mainWindow.on('focus', () => {
         if(EQlock)  globalShortcut.register('E', () => { });
         if(EQlock)  globalShortcut.register('Q', () => { });
-        overlayWindow.show();
-        syncOverlay();
+        // overlayWindow.show(); // 确保显示
+        // overlayWindow.setAlwaysOnTop(true); // 强制置顶
+        // syncOverlay();
     });
     if(EQlock)  globalShortcut.register('E', () => { });
     if(EQlock)  globalShortcut.register('Q', () => { });
@@ -81,9 +83,6 @@ function keyEventRegister() {
         if (e.keycode === UiohookKey.Q) {
             if (!EQlock) mainWindow.webContents.sendInputEvent({ type: 'keyDown', keyCode: 'Q' });
         }
-        if (e.keycode === UiohookKey.K) Kpressed = 1;
-        if (e.keycode === UiohookKey.L) Lpressed = 1;
-        if (e.keycode >= UiohookKey['1'] && e.keycode <= UiohookKey['0'] && (Kpressed || Lpressed) && mainWindow.isFocused()) playSound(`./music/equip${Math.floor(Math.random() * 6)}.mp3`);
     });
     uIOhook.on('keyup', (e) => {
         if (e.keycode === UiohookKey.E) {
@@ -92,8 +91,6 @@ function keyEventRegister() {
         if (e.keycode === UiohookKey.Q) {
             if (!EQlock) mainWindow.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'Q' });
         }
-        if (e.keycode === UiohookKey.K) Kpressed = 0;
-        if (e.keycode === UiohookKey.L) Lpressed = 0;
     });
 
     //EQlock更新
@@ -126,42 +123,43 @@ async function setFlorrEQ(val) {
 
 
 //附加层初始化
-function loadOverlayWindow(){
-    // 附加层窗口
-    overlayWindow = new BrowserWindow({
-        width: mainWindow.getBounds().width,
-        height: mainWindow.getBounds().height - 32,
-        x: mainWindow.getBounds().x,
-        y: mainWindow.getBounds().y + 32,
-        frame: false,           // 无边框
-        transparent: true,      // 透明背景
-        alwaysOnTop: true,      // 置顶
-        skipTaskbar: true,      // 不显示在任务栏
-        focusable: false,       // 不可聚焦
-        webPreferences: {
-            nodeIntegration: true, // 允许简单 DOM 操作
-            contextIsolation: false
-        }
-    });
-    overlayWindow.loadFile(path.join(__dirname, 'overlay.html'));
-    overlayWindow.setIgnoreMouseEvents(true);
+// function loadOverlayWindow(){
+//     // 附加层窗口
+//     overlayWindow = new BrowserWindow({
+//         width: mainWindow.getBounds().width,
+//         height: mainWindow.getBounds().height - 32,
+//         x: mainWindow.getBounds().x,
+//         y: mainWindow.getBounds().y + 32,
+//         frame: false,           // 无边框
+//         transparent: true,      // 透明背景
+//         // alwaysOnTop: true,      // 置顶
+//         // skipTaskbar: true,      // 不显示在任务栏
+//         // focusable: false,       // 不可聚焦
+//         webPreferences: {
+//             nodeIntegration: true, // 允许简单 DOM 操作
+//             contextIsolation: false
+//         }
+//     });
+//     overlayWindow.loadFile(path.join(__dirname, 'overlay.html'));
+//     overlayWindow.setIgnoreMouseEvents(true, { forward: true });
+//     overlayWindow.setAlwaysOnTop(true, 'screen-saver'); // 更高层级 
 
-    // 同步主窗口位置和大小
-    mainWindow.on('move', syncOverlay);
-    mainWindow.on('resize', syncOverlay);
-    mainWindow.on('enter-full-screen', () => syncOverlay());
-    mainWindow.on('leave-full-screen', () => syncOverlay());
+//     // 同步主窗口位置和大小
+//     mainWindow.on('move', syncOverlay);
+//     mainWindow.on('resize', syncOverlay);
+//     mainWindow.on('enter-full-screen', () => syncOverlay());
+//     mainWindow.on('leave-full-screen', () => syncOverlay());
     
-    mainWindow.on('minimize', () => {
-        overlayWindow.hide();
-    });
+//     mainWindow.on('minimize', () => {
+//         // overlayWindow.hide();
+//     });
     
-    mainWindow.on('restore', () => {
-        overlayWindow.show();
-        syncOverlay();
-    });
-    syncOverlay();
-}
+//     mainWindow.on('restore', () => {
+//         overlayWindow.show();
+//         syncOverlay();
+//     });
+//     syncOverlay();
+// }
 
 function _main_init(_EQlock){
     EQlock=_EQlock
@@ -169,6 +167,11 @@ function _main_init(_EQlock){
 
 //Main
 app.whenReady().then(async () => {
+    process.on('unhandledRejection', (reason, p) => {
+        console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+        // application specific logging, throwing an error, or other logic here
+      });
+      
     //设置存储
     const Store = (await import('electron-store')).default;
     store = new Store({
@@ -176,7 +179,35 @@ app.whenReady().then(async () => {
             lockEQ: false,
             musicKit: 'terraria',
             musicVolume: 0.2,
-            serverListVisible: false
+            serverListVisible: false,
+            _loadouts_cur: 0,
+            _loadouts_lst: 1,
+            _loadouts_binds_0: '',
+            _loadouts_binds_1: '',
+            _loadouts_binds_2: '',
+            _loadouts_binds_3: '',
+            _loadouts_binds_4: '',
+            _loadouts_binds_5: '',
+            _loadouts_binds_6: '',
+            _loadouts_binds_7: '',
+            _loadouts_binds_8: '',
+            _loadouts_binds_9: '',
+            _loadouts_binds_10: '',
+            _loadouts_binds_11: '',
+            _loadouts_binds_12: '',
+            _loadouts_binds_13: '',
+            _loadouts_binds_13: '',
+            _loadouts_binds_14: '',
+            _loadouts_binds_15: '',
+            _loadouts_binds_16: '',
+            _loadouts_binds_17: '',
+            _loadouts_binds_18: '',
+            _loadouts_binds_19: '',
+            _loadouts_binds_prev: '',
+            _loadouts_binds_next: '',
+            _loadouts_binds_last: '',
+            _loadouts_features_sound: true,
+            _loadouts_features_wheel: false
         }
     });
 
@@ -192,10 +223,10 @@ app.whenReady().then(async () => {
     });
 
     mainWindow.setMenu(null);
-    mainWindow.loadURL("https://florr.io");
+    // mainWindow.loadURL("https://florr.io");
 
     // 附加层窗口
-    loadOverlayWindow();
+    // loadOverlayWindow();
 
 
     //加载工具栏窗口
@@ -206,10 +237,15 @@ app.whenReady().then(async () => {
     musicWindow = createMusicWindow();
     musicWindow.hide()
 
+    // 套装功能初始化
+    _loadouts_init(mainWindow,store)
+
     //初始化存储
     _main_init(store.get('lockEQ'));
     _music_window_init(store.get('musicKit'),store.get('musicVolume'))
     _toolbar_window_init(store.get('lockEQ'),store.get('serverListVisible'))
+    _loadouts_loadstore(store.get('_loadouts_cur'),store.get('_loadouts_lst'),store.get('_loadouts_features_sound'),store.get('_loadouts_features_wheel'));
+    _loadouts_window_loadstore(store);
     ipcMain.on('_changeSettings',async (_event,ls)=>{
         store.set(ls[0],ls[1]);
         console.log(`set ${ls[0]} to ${ls[1]}`);
@@ -282,9 +318,7 @@ app.whenReady().then(async () => {
 
 
     globalShortcut.register('Alt+E', async () => {
-        console.log("begin")
-        await setFlorrEQ(0.65);
-        console.log("end");
+        // console.log(overlayWindow.isVisible());
     })
 
     //uIOhook监听
@@ -292,18 +326,31 @@ app.whenReady().then(async () => {
     //按键事件管理
     keyEventRegister();
 
+    // mainWindow.webContents.on('did-finish-load', () => {
+    //     mainWindow.webContents.executeJavaScript(`
+    //         const originalArc = CanvasRenderingContext2D.prototype.arc;
+    //         CanvasRenderingContext2D.prototype.arc = function(x, y, radius, startAngle, endAngle, counterclockwise) {
+    //             const angleRange = Math.abs(endAngle - startAngle);
+    //             const fullCircle = 2 * Math.PI;
+    //             const percentage = (angleRange / fullCircle) * 100;
+    //             if(percentage<99)console.log( x, y, radius, startAngle, endAngle, percentage );
+    //             return originalArc.apply(this, arguments);
+    //         };
+    //     `).catch(err => console.error('注入失败:', err));
+    // });
+
     // initCompleted = true;
 
     // 拦截所有 HTTP/HTTPS 请求
-    // const httpFilter = { urls: ['http://*/*', 'https://*/*'] };
-    // mainWindow.webContents.session.webRequest.onBeforeRequest(httpFilter, (details, callback) => {
-    //     console.log('HTTP/HTTPS 请求发起:', details.method, details.url);
-    //     callback({ cancel: false });
-    // });
+    const httpFilter = { urls: ['http://*/*', 'https://*/*'] };
+    mainWindow.webContents.session.webRequest.onBeforeRequest(httpFilter, (details, callback) => {
+        console.log('HTTP/HTTPS 请求发起:', details.method, details.url);
+        callback({ cancel: false });
+    });
 
-    // mainWindow.webContents.session.webRequest.onCompleted(httpFilter, (details) => {
-    //     console.log('HTTP/HTTPS 请求完成:', details.method, details.url, '状态码:', details.statusCode);
-    // });
+    mainWindow.webContents.session.webRequest.onCompleted(httpFilter, (details) => {
+        console.log('HTTP/HTTPS 请求完成:', details.method, details.url, '状态码:', details.statusCode);
+    });
 
     // 拦截 WebSocket 请求
     // const wsFilter = { urls: ['wss://*/*'] };
@@ -363,22 +410,22 @@ app.whenReady().then(async () => {
             processLog(logMessage);
         }
         // 捕获 HTTP/HTTPS 响应内容
-        // if (method === "Network.responseReceived") {
-        //     const response = params.response;
-        //     console.log('HTTP/HTTPS 响应:', response.url, '状态码:', response.status);
-        //     // 获取响应体
-        //     mainWindow.webContents.debugger.sendCommand("Network.getResponseBody", { requestId: params.requestId }, (err, result) => {
-        //         if (!err) {
-        //             console.log('响应内容:', result.body);
-        //             try {
-        //                 const jsonData = JSON.parse(result.body);
-        //                 console.log('解析后的 JSON:', jsonData);
-        //             } catch (e) {
-        //                 console.log('非 JSON 响应或解析失败');
-        //             }
-        //         }
-        //     });
-        // }
+        if (method === "Network.responseReceived") {
+            const response = params.response;
+            console.log('HTTP/HTTPS 响应:', response.url, '状态码:', response.status);
+            // 获取响应体
+            mainWindow.webContents.debugger.sendCommand("Network.getResponseBody", { requestId: params.requestId }, (err, result) => {
+                if (!err) {
+                    console.log('响应内容:', result.body);
+                    try {
+                        const jsonData = JSON.parse(result.body);
+                        console.log('解析后的 JSON:', jsonData);
+                    } catch (e) {
+                        console.log('非 JSON 响应或解析失败');
+                    }
+                }
+            });
+        }
         // 捕获 WebSocket 数据
         // if (method === "Network.webSocketCreated") {
         //     console.log("WebSocket 创建:", params.url);
@@ -392,18 +439,25 @@ app.whenReady().then(async () => {
     });
 
     // 主窗口强制退出程序
-    mainWindow.on('closed', () => {
-        if (toolbarWindow && !toolbarWindow.isDestroyed()) {
-            _toolbar_setMainQuited();
-            toolbarWindow.destroy();
-        }
-        if (musicWindow && !musicWindow.isDestroyed()) {
-            _music_setMainQuited();
-            musicWindow.destroy();
-        }
-        overlayWindow.close();
-        mainWindow = null;
+    mainWindow.on('close', (event) => {
+        event.preventDefault(); // 阻止默认关闭行为
+        _toolbar_setMainQuited();
+        toolbarWindow.close();
+        _music_setMainQuited();
+        musicWindow.close();
+        // mainWindow.destroy();
+        // await sleep(1000)
+        mainWindow.destroy();
         app.quit();
+        // if (toolbarWindow && !toolbarWindow.isDestroyed()) {
+        //     toolbarWindow.destroy();
+        // }
+        // if (musicWindow && !musicWindow.isDestroyed()) {
+        //     musicWindow.destroy();
+        // }
+        // overlayWindow.close();
+        // mainWindow = null;
+        // app.quit();
     });
 
     //地图代码初始化

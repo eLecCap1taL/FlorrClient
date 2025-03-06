@@ -27,4 +27,6 @@ florr-client/*.tmp
 betterflorr.js
 source.js
 
+config.json.lnk
+
 # .gitignore

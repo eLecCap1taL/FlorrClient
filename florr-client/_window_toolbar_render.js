@@ -5,6 +5,7 @@ const toggleButton = document.getElementById('toggleServerList');
 const serverList = document.getElementById('serverList');
 const lockEQCheckbox = document.getElementById('lockEQ');
 const setEQButton = document.getElementById('setEQ');
+const loadoutsSettingsButton = document.getElementById('loadoutsSettings');
 
 //日志追加
 function appendLog(message) {
@@ -56,12 +57,17 @@ async function getInput(promptText, defaultValue = '', returnDefaultIfEmpty = fa
 
 //设定转速
 setEQButton.addEventListener('click', async () => {
-    ret = parseFloat(await getInput('请输入转速 - 0.3到1.0之间的任意小数',1.0,true))
-    if(!Number.isFinite(ret))   ret=1.0
-    if(ret>1.0) ret=1.0
-    if(ret<0.3) ret=0.3
+    ret = parseFloat(await getInput('请输入转速 - 0.3到1.0之间的任意小数', 1.0, true))
+    if (!Number.isFinite(ret)) ret = 1.0
+    if (ret > 1.0) ret = 1.0
+    if (ret < 0.3) ret = 0.3
     window.myAPI.setFlorrEQ(ret)
-    appendLog(`设置转速为 ${ret*100.0}%`)
+    appendLog(`设置转速为 ${ret * 100.0}%`)
+});
+
+//套装设置
+loadoutsSettingsButton.addEventListener('click', async () => {
+    window.myAPI.openLoadoutsWindow()
 });
 
 //清空日志
@@ -76,16 +82,16 @@ toggleButton.addEventListener('click', () => {
     isServerListVisible = !isServerListVisible;
     serverList.style.display = isServerListVisible ? 'block' : 'none';
     toggleButton.textContent = isServerListVisible ? '隐藏完整服务器列表' : '显示完整服务器列表';
-    window.myAPI.changeSettings(['serverListVisible',isServerListVisible]);
+    window.myAPI.changeSettings(['serverListVisible', isServerListVisible]);
 });
 
 //EQ锁定复选框
 lockEQCheckbox.addEventListener('change', () => {
     const isLocked = lockEQCheckbox.checked;
-    applyGlow(lockEQCheckbox,'rgba(0, 255, 0, 0.7)',500)
+    applyGlow(lockEQCheckbox, 'rgba(0, 255, 0, 0.7)', 500)
     appendLog(`锁定EQ: ${isLocked ? '启用' : '禁用'}`);
     window.myAPI.updEQlock(isLocked);
-    window.myAPI.changeSettings(['lockEQ',lockEQCheckbox.checked]);
+    window.myAPI.changeSettings(['lockEQ', lockEQCheckbox.checked]);
 });
 
 //请求刷新服务器列表
@@ -111,7 +117,7 @@ window.myAPI.onUpdMapCodeList((serverData) => {
     serverData.forEach(([serverId, idx]) => {
         if (idx >= 1 && idx <= 8) mapServers[idx - 1].push(serverId);
     });
-    const idx2map = ["Unknown", "Garden", "Desert", "Ocean", "Jungle", "AntHell","Hel", "Sewers" , "Factory"];
+    const idx2map = ["Unknown", "Garden", "Desert", "Ocean", "Jungle", "AntHell", "Hel", "Sewers", "Factory"];
     serverList.innerHTML = '';
     for (let i = 0; i < 8; i++) {
         const div = document.createElement('div');
@@ -123,13 +129,13 @@ window.myAPI.onUpdMapCodeList((serverData) => {
     applyGlow(target, 'rgba(0, 255, 0, 0.7)', 800);
 })
 
-window.myAPI.onInit((ls)=>{
-    _EQlock=ls[0]
-    _serverListVisible=ls[1]
-    
-    lockEQCheckbox.checked=_EQlock
+window.myAPI.onInit((ls) => {
+    _EQlock = ls[0]
+    _serverListVisible = ls[1]
 
-    isServerListVisible=_serverListVisible
+    lockEQCheckbox.checked = _EQlock
+
+    isServerListVisible = _serverListVisible
     serverList.style.display = _serverListVisible ? 'block' : 'none';
     toggleButton.textContent = _serverListVisible ? '隐藏完整服务器列表' : '显示完整服务器列表';
 })
