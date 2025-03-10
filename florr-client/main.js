@@ -5,9 +5,11 @@ const { createToolbarWindow, toolbarLog, toolbarUpdMapCode, _toolbar_setMainQuit
 const { createMusicWindow, _music_setMainQuited, changeBGM, setPause, playSound,_music_window_init } = require('./_window_music');
 // const sound = require("sound-play")
 const { uIOhook, UiohookKey } = require('uiohook-napi');
+const fs = require('fs').promises;
 
 const {_loadouts_init,_loadouts_loadstore} = require('./modules/loadouts/loadouts');
 const { _loadouts_window_loadstore } = require('./modules/loadouts/_window_loadouts');
+const { log } = require('console');
 
 let mainWindow;
 // let overlayWindow
@@ -34,10 +36,9 @@ function sleep(ms) {
 
 //处理日志
 function processLog(logMsg) {
-    console.log("florr.io Console:", logMsg);
-
     match = logMsg.match(/^Connecting to ([a-z0-9]+)\../)
 
+    //处理服号
     if (match) {
         // toolbarLog("连接到新服务器")
         mapcode.updCurMapCode(match[1]);
@@ -46,6 +47,22 @@ function processLog(logMsg) {
         // toolbarCMD("setCurMapCode("+match[1]+")");
         return;
     }
+    //处理florrEvents
+    if (logMsg.startsWith('$FCset')){
+        const parts = logMsg.split(' ');
+        if (parts.length !== 3) {
+            console.error('无效指令格式');
+            return;
+        }
+
+        [, key, value] = parts;
+        if(value=='true')   value=true
+        if(value=='false')  value=false
+        florrEvents[key]=value
+        checkEQpass()
+        return ;
+    }
+    console.log("florr.io Console:", logMsg);
 }
 
 //同步附加层
@@ -58,55 +75,49 @@ function processLog(logMsg) {
 //     overlayWindow.setSize(bounds.width, bounds.height - titleBarHeight);
 // }
 
-//按键事件管理
+//判断是否需要放行EQ
 let EQlock = false
-function keyEventRegister() {
-    mainWindow.on('blur', () => {
+function checkEQpass(){
+    globalShortcut.register('E',()=>{});
+    globalShortcut.register('Q',()=>{});
+    console.log(EQlock,florrEvents)
+    if(!mainWindow.isFocused()){
+        console.log("pass");
         globalShortcut.unregister('E');
         globalShortcut.unregister('Q');
-        // overlayWindow.hide();
+    }
+    if(!EQlock){
+        console.log("pass");
+        globalShortcut.unregister('E');
+        globalShortcut.unregister('Q');
+        return true
+    }
+    if(florrEvents['chat']) return false
+    if(florrEvents['talent'] || florrEvents['craft'] || florrEvents['bag']) return false
+    console.log("pass");
+    globalShortcut.unregister('E');
+    globalShortcut.unregister('Q');
+    return true
+}
+
+
+//按键事件管理
+function keyEventRegister() {
+
+    mainWindow.on('blur', () => {
+        checkEQpass()
     });
 
     mainWindow.on('focus', () => {
-        if(EQlock)  globalShortcut.register('E', () => { });
-        if(EQlock)  globalShortcut.register('Q', () => { });
-        // overlayWindow.show(); // 确保显示
-        // overlayWindow.setAlwaysOnTop(true); // 强制置顶
-        // syncOverlay();
+        checkEQpass()
     });
-    if(EQlock)  globalShortcut.register('E', () => { });
-    if(EQlock)  globalShortcut.register('Q', () => { });
-    uIOhook.on('keydown', (e) => {
-        if (e.keycode === UiohookKey.E) {
-            if (!EQlock) mainWindow.webContents.sendInputEvent({ type: 'keyDown', keyCode: 'E' });
-        }
-        if (e.keycode === UiohookKey.Q) {
-            if (!EQlock) mainWindow.webContents.sendInputEvent({ type: 'keyDown', keyCode: 'Q' });
-        }
-    });
-    uIOhook.on('keyup', (e) => {
-        if (e.keycode === UiohookKey.E) {
-            if (!EQlock) mainWindow.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'E' });
-        }
-        if (e.keycode === UiohookKey.Q) {
-            if (!EQlock) mainWindow.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'Q' });
-        }
-    });
+    checkEQpass()
 
     //EQlock更新
     ipcMain.on('_updEQlock', (_event, status) => {
         // console.log(status);
-        mainWindow.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'E' });
-        mainWindow.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'Q' });
         EQlock = status
-        if(status==0){
-            globalShortcut.unregister('E');
-            globalShortcut.unregister('Q');
-        }
-        if(status==1 && mainWindow.isFocused()){
-            globalShortcut.register('E', () => { });
-            globalShortcut.register('Q', () => { });
-        }
+        checkEQpass()
     })
 }
 
@@ -161,8 +172,35 @@ async function setFlorrEQ(val) {
 //     syncOverlay();
 // }
 
+//加载用户脚本
+async function loadScripts() {
+    const scriptsDir = path.join(__dirname, 'user_scripts');
+    try {
+        const files = await fs.readdir(scriptsDir);
+        const jsFiles = files.filter(file => file.endsWith('.js'));
+        const scripts = await Promise.all(
+            jsFiles.map(async file => {
+                const content = await fs.readFile(path.join(scriptsDir, file), 'utf8');
+                return { name: file, content };
+            })
+        );
+        return scripts;
+    } catch (error) {
+        console.error('加载脚本失败:', error);
+        return [];
+    }
+}
+
+//监听各类事件
+let florrEvents=new Map()
+florrEvents['chat']=false
+florrEvents['bag']=false
+florrEvents['craft']=false
+florrEvents['talent']=false
+
 function _main_init(_EQlock){
     EQlock=_EQlock
+    checkEQpass()
 }
 
 //Main
@@ -170,7 +208,7 @@ app.whenReady().then(async () => {
     process.on('unhandledRejection', (reason, p) => {
         console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
         // application specific logging, throwing an error, or other logic here
-      });
+    });
       
     //设置存储
     const Store = (await import('electron-store')).default;
@@ -223,7 +261,21 @@ app.whenReady().then(async () => {
     });
 
     mainWindow.setMenu(null);
-    // mainWindow.loadURL("https://florr.io");
+    mainWindow.loadURL("https://florr.io");
+
+
+    //加载user_scripts
+    mainWindow.webContents.on('did-finish-load', async () => {
+        const scripts = await loadScripts();
+        for (const script of scripts) {
+            try {
+                await mainWindow.webContents.executeJavaScript(script.content);
+                console.log(`注入脚本: ${script.name}`);
+            } catch (error) {
+                console.error(`注入 ${script.name} 失败:`, error);
+            }
+        }
+    });
 
     // 附加层窗口
     // loadOverlayWindow();
@@ -313,13 +365,11 @@ app.whenReady().then(async () => {
             setPause(0);
             toolbarLog("Florr Client 已显示")
         }
-
     });
-
-
-    globalShortcut.register('Alt+E', async () => {
-        // console.log(overlayWindow.isVisible());
-    })
+    globalShortcut.register('F5', () => {
+        mainWindow.webContents.reloadIgnoringCache();
+        console.log('F5 强制刷新');
+    });
 
     //uIOhook监听
     uIOhook.start();
@@ -342,15 +392,15 @@ app.whenReady().then(async () => {
     // initCompleted = true;
 
     // 拦截所有 HTTP/HTTPS 请求
-    const httpFilter = { urls: ['http://*/*', 'https://*/*'] };
-    mainWindow.webContents.session.webRequest.onBeforeRequest(httpFilter, (details, callback) => {
-        console.log('HTTP/HTTPS 请求发起:', details.method, details.url);
-        callback({ cancel: false });
-    });
+    // const httpFilter = { urls: ['http://*/*', 'https://*/*'] };
+    // mainWindow.webContents.session.webRequest.onBeforeRequest(httpFilter, (details, callback) => {
+    //     console.log('HTTP/HTTPS 请求发起:', details.method, details.url);
+    //     callback({ cancel: false });
+    // });
 
-    mainWindow.webContents.session.webRequest.onCompleted(httpFilter, (details) => {
-        console.log('HTTP/HTTPS 请求完成:', details.method, details.url, '状态码:', details.statusCode);
-    });
+    // mainWindow.webContents.session.webRequest.onCompleted(httpFilter, (details) => {
+    //     console.log('HTTP/HTTPS 请求完成:', details.method, details.url, '状态码:', details.statusCode);
+    // });
 
     // 拦截 WebSocket 请求
     // const wsFilter = { urls: ['wss://*/*'] };
@@ -410,22 +460,22 @@ app.whenReady().then(async () => {
             processLog(logMessage);
         }
         // 捕获 HTTP/HTTPS 响应内容
-        if (method === "Network.responseReceived") {
-            const response = params.response;
-            console.log('HTTP/HTTPS 响应:', response.url, '状态码:', response.status);
-            // 获取响应体
-            mainWindow.webContents.debugger.sendCommand("Network.getResponseBody", { requestId: params.requestId }, (err, result) => {
-                if (!err) {
-                    console.log('响应内容:', result.body);
-                    try {
-                        const jsonData = JSON.parse(result.body);
-                        console.log('解析后的 JSON:', jsonData);
-                    } catch (e) {
-                        console.log('非 JSON 响应或解析失败');
-                    }
-                }
-            });
-        }
+        // if (method === "Network.responseReceived") {
+        //     const response = params.response;
+        //     console.log('HTTP/HTTPS 响应:', response.url, '状态码:', response.status);
+        //     // 获取响应体
+        //     mainWindow.webContents.debugger.sendCommand("Network.getResponseBody", { requestId: params.requestId }, (err, result) => {
+        //         if (!err) {
+        //             console.log('响应内容:', result.body);
+        //             try {
+        //                 const jsonData = JSON.parse(result.body);
+        //                 console.log('解析后的 JSON:', jsonData);
+        //             } catch (e) {
+        //                 console.log('非 JSON 响应或解析失败');
+        //             }
+        //         }
+        //     });
+        // }
         // 捕获 WebSocket 数据
         // if (method === "Network.webSocketCreated") {
         //     console.log("WebSocket 创建:", params.url);
