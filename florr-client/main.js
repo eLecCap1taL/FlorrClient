@@ -80,21 +80,18 @@ let EQlock = false
 function checkEQpass(){
     globalShortcut.register('E',()=>{});
     globalShortcut.register('Q',()=>{});
-    console.log(EQlock,florrEvents)
     if(!mainWindow.isFocused()){
         console.log("pass");
         globalShortcut.unregister('E');
         globalShortcut.unregister('Q');
     }
     if(!EQlock){
-        console.log("pass");
         globalShortcut.unregister('E');
         globalShortcut.unregister('Q');
         return true
     }
     if(florrEvents['chat']) return false
     if(florrEvents['talent'] || florrEvents['craft'] || florrEvents['bag']) return false
-    console.log("pass");
     globalShortcut.unregister('E');
     globalShortcut.unregister('Q');
     return true
