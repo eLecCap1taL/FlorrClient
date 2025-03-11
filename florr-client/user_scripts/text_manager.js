@@ -8,6 +8,8 @@
     const origFill = CanvasRenderingContext2D.prototype.fillText;
     const origStroke = CanvasRenderingContext2D.prototype.strokeText;
 
+    window.curEQPercent=100
+
     function judgeText(text,sta){
         if(text=="按下[ENTER]或点击这里聊天"){
             console.log("$FCset chat "+sta);
@@ -29,7 +31,7 @@
         // if(match){
         //     console.log("$FCfps "+match[1]);
         // }
-        console.log(text+" "+sta);
+        // console.log(text+" "+sta);
     }
 
     function updateText(method, text) {
@@ -42,10 +44,8 @@
         } else {
             textMap.set(text, now);
         }
-        // 检查过期文本
         for (const [t, time] of textMap) {
             if (now - time > 100) {
-                // console.log(`${method} 移除文本:`, t);
                 judgeText(t,false);
                 textMap.delete(t);
             }
@@ -54,11 +54,25 @@
 
     CanvasRenderingContext2D.prototype.fillText = function(text, x, y, maxWidth,check = true) {
         if(check) updateText('fillText', text);
-        return origFill.apply(this, arguments);
+        if(text=='转速' && y==4.5)   text=`${Math.round(10*(window.curEQPercent))/10}%`
+        // const transform = this.getTransform();
+        // const absX = Math.round(transform.e + x);
+        // const absY = Math.round(transform.f + y);
+        // if(!(absX>=0 && absX<=window.devicePixelRatio*window.innerWidth && absY>=0 && absY<=window.devicePixelRatio*window.innerHeight)){
+        //     return ()=>{};
+        // }
+        return origFill.call(this, text, x, y, maxWidth);
     };
 
     CanvasRenderingContext2D.prototype.strokeText = function(text, x, y, maxWidth,check = false) {
         if(check) updateText('strokeText', text);
-        return origStroke.apply(this, arguments);
+        if(text=='转速' && y==4.5)   text=`${Math.round(10*(window.curEQPercent))/10}%`
+        // const transform = this.getTransform();
+        // const absX = Math.round(transform.e + x);
+        // const absY = Math.round(transform.f + y);
+        // if(!(absX>=0 && absX<=window.devicePixelRatio*window.innerWidth && absY>=0 && absY<=window.devicePixelRatio*window.innerHeight)){
+        //     return ()=>{};
+        // }
+        return origStroke.call(this, text, x, y, maxWidth);
     };
 })();

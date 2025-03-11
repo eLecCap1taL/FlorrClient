@@ -17,9 +17,9 @@ function toolbarUpdMapCode(mapcode){
     toolbarWindow.webContents.send('setCurMapCode',mapcode)
 }
 
-function _toolbar_window_init(_EQlock,_serverListVisible){
+function _toolbar_window_init(store){
 
-    toolbarWindow.webContents.send('_init',[_EQlock,_serverListVisible]);
+    toolbarWindow.webContents.send('_init',[store.get('lockEQ'),store.get('serverListVisible'),store.get('displayPetalCD'),store.get('displayBuffCD')]);
 }
 
 function createToolbarWindow() {

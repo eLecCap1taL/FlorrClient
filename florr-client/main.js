@@ -81,7 +81,6 @@ function checkEQpass(){
     globalShortcut.register('E',()=>{});
     globalShortcut.register('Q',()=>{});
     if(!mainWindow.isFocused()){
-        console.log("pass");
         globalShortcut.unregister('E');
         globalShortcut.unregister('Q');
     }
@@ -119,14 +118,8 @@ function keyEventRegister() {
 }
 
 //设定转速
-async function setFlorrEQ(val) {
-    mainWindow.webContents.sendInputEvent({ type: 'keyDown', keyCode: 'E' });
-    await sleep(1000)
-    mainWindow.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'E' });
-    if (val == 1.0) return;
-    mainWindow.webContents.sendInputEvent({ type: 'keyDown', keyCode: 'Q' });
-    await sleep(Math.floor(1000.0 * ((1.0 - val) / 0.7)));
-    mainWindow.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'Q' });
+function setFlorrEQ(val) {
+    mainWindow.webContents.executeJavaScript(`window.setRotate(${val})`)
 }
 
 
@@ -195,8 +188,10 @@ florrEvents['bag']=false
 florrEvents['craft']=false
 florrEvents['talent']=false
 
-function _main_init(_EQlock){
-    EQlock=_EQlock
+function _main_init(store){
+    EQlock=store.get('lockEQ')
+    mainWindow.webContents.executeJavaScript(`window.setDisplayPetalCD(${store.get('displayPetalCD')})`)
+    mainWindow.webContents.executeJavaScript(`window.setDisplayBuffCD(${store.get('displayBuffCD')})`)
     checkEQpass()
 }
 
@@ -242,7 +237,9 @@ app.whenReady().then(async () => {
             _loadouts_binds_next: '',
             _loadouts_binds_last: '',
             _loadouts_features_sound: true,
-            _loadouts_features_wheel: false
+            _loadouts_features_wheel: false,
+            displayPetalCD: true,
+            displayBuffCD: true,
         }
     });
 
@@ -272,6 +269,17 @@ app.whenReady().then(async () => {
                 console.error(`注入 ${script.name} 失败:`, error);
             }
         }
+
+        //初始化存储
+        _main_init(store);
+        _music_window_init(store.get('musicKit'),store.get('musicVolume'))
+        _toolbar_window_init(store)
+        _loadouts_loadstore(store.get('_loadouts_cur'),store.get('_loadouts_lst'),store.get('_loadouts_features_sound'),store.get('_loadouts_features_wheel'));
+        _loadouts_window_loadstore(store);
+        ipcMain.on('_changeSettings',async (_event,ls)=>{
+            store.set(ls[0],ls[1]);
+            console.log(`set ${ls[0]} to ${ls[1]}`);
+        })
     });
 
     // 附加层窗口
@@ -288,17 +296,6 @@ app.whenReady().then(async () => {
 
     // 套装功能初始化
     _loadouts_init(mainWindow,store)
-
-    //初始化存储
-    _main_init(store.get('lockEQ'));
-    _music_window_init(store.get('musicKit'),store.get('musicVolume'))
-    _toolbar_window_init(store.get('lockEQ'),store.get('serverListVisible'))
-    _loadouts_loadstore(store.get('_loadouts_cur'),store.get('_loadouts_lst'),store.get('_loadouts_features_sound'),store.get('_loadouts_features_wheel'));
-    _loadouts_window_loadstore(store);
-    ipcMain.on('_changeSettings',async (_event,ls)=>{
-        store.set(ls[0],ls[1]);
-        console.log(`set ${ls[0]} to ${ls[1]}`);
-    })
 
     //开发者工具快捷键
     globalShortcut.register('CommandOrControl+Shift+I', () => {
@@ -519,8 +516,23 @@ app.whenReady().then(async () => {
 
     //处理转速设定请求
     ipcMain.on('_setFlorrEQ', async (_event, val) => {
-        // console.log(val);
         setFlorrEQ(val);
+    })
+
+    //处理FPS设定请求
+    ipcMain.on('_setFlorrFPS', async (_event, val) => {
+        mainWindow.webContents.executeJavaScript(`window.setFpsLimit(${val})`)
+    })
+
+    //处理花瓣CD显示请求
+    ipcMain.on('_updDisplayPetalCD', async (_event, val) => {
+        // console.log(`petal ${val}`);
+        mainWindow.webContents.executeJavaScript(`window.setDisplayPetalCD(${val})`)
+    })
+    //处理BuffCD显示请求
+    ipcMain.on('_updDisplayBuffCD', async (_event, val) => {
+        // console.log(`buff ${val}`);
+        mainWindow.webContents.executeJavaScript(`window.setDisplayBuffCD(${val})`)
     })
 });
 

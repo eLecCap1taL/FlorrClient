@@ -4,19 +4,23 @@
 // ==/UserScript==
 
 (function() {
-    const targetFPS = 50; // 自定义 FPS 上限
-    const frameTime = 1000 / targetFPS;
+
+    window.setFpsLimit=function(targetFPS){
+        targetFPS=targetFPS/8.3*5
+        window.frameTime=1000/targetFPS
+    }
+    window.frameTime = 0;
     let lastFrame = performance.now();
 
     const originalRAF = window.requestAnimationFrame;
     window.requestAnimationFrame = function(callback) {
         const now = performance.now();
         const elapsed = now - lastFrame;
-        if (elapsed >= frameTime) {
+        if (elapsed >= window.frameTime) {
             lastFrame = now;
             originalRAF(callback);
         } else {
-            setTimeout(() => originalRAF(callback), frameTime - elapsed);
+            setTimeout(() => originalRAF(callback), window.frameTime - elapsed);
         }
     };
 })();

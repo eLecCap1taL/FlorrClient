@@ -4,7 +4,10 @@ const curmaptext = document.getElementById('server-id');
 const toggleButton = document.getElementById('toggleServerList');
 const serverList = document.getElementById('serverList');
 const lockEQCheckbox = document.getElementById('lockEQ');
+const displayPetalCDCheckbox = document.getElementById('displayPetalCD');
+const displayBuffCDCheckbox = document.getElementById('displayBuffCD');
 const setEQButton = document.getElementById('setEQ');
+const setFPSButton = document.getElementById('setFPS');
 const loadoutsSettingsButton = document.getElementById('loadoutsSettings');
 
 //日志追加
@@ -65,6 +68,16 @@ setEQButton.addEventListener('click', async () => {
     appendLog(`设置转速为 ${ret * 100.0}%`)
 });
 
+//设定帧数上限
+setFPSButton.addEventListener('click', async () => {
+    ret = parseFloat(await getInput('请输入帧数上限（超过显示器刷新率无效）', 1000, true))
+    if (!Number.isFinite(ret)) ret = 1000
+    // if (ret > 1.0) ret = 1.0
+    if (ret < 1) ret = 1
+    window.myAPI.setFlorrFPS(ret)
+    appendLog(`设置FPS上限为 ${ret}`)
+});
+
 //套装设置
 loadoutsSettingsButton.addEventListener('click', async () => {
     window.myAPI.openLoadoutsWindow()
@@ -92,6 +105,24 @@ lockEQCheckbox.addEventListener('change', () => {
     appendLog(`锁定EQ: ${isLocked ? '启用' : '禁用'}`);
     window.myAPI.updEQlock(isLocked);
     window.myAPI.changeSettings(['lockEQ', lockEQCheckbox.checked]);
+});
+
+//花瓣CD显示复选框
+displayPetalCDCheckbox.addEventListener('change', () => {
+    const isDisplay = displayPetalCDCheckbox.checked;
+    applyGlow(displayPetalCDCheckbox, 'rgba(0, 255, 0, 0.7)', 500)
+    appendLog(`显示花瓣冷却进度: ${isDisplay ? '启用' : '禁用'}`);
+    window.myAPI.updDisplayPetalCD(isDisplay);
+    window.myAPI.changeSettings(['displayPetalCD', isDisplay]);
+});
+
+//BuffCD显示复选框
+displayBuffCDCheckbox.addEventListener('change', () => {
+    const isDisplay = displayBuffCDCheckbox.checked;
+    applyGlow(displayBuffCDCheckbox, 'rgba(0, 255, 0, 0.7)', 500)
+    appendLog(`显示Buff冷却进度: ${isDisplay ? '启用' : '禁用'}`);
+    window.myAPI.updDisplayBuffCD(isDisplay);
+    window.myAPI.changeSettings(['displayBuffCD', isDisplay]);
 });
 
 //请求刷新服务器列表
@@ -132,8 +163,12 @@ window.myAPI.onUpdMapCodeList((serverData) => {
 window.myAPI.onInit((ls) => {
     _EQlock = ls[0]
     _serverListVisible = ls[1]
+    _displayPetalCD = ls[2]
+    _displayBuffCD = ls[3]
 
     lockEQCheckbox.checked = _EQlock
+    displayPetalCDCheckbox.checked = _displayPetalCD
+    displayBuffCDCheckbox.checked = _displayBuffCD
 
     isServerListVisible = _serverListVisible
     serverList.style.display = _serverListVisible ? 'block' : 'none';

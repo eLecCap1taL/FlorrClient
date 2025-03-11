@@ -19,23 +19,41 @@ document.body.appendChild(canvas);
 
 const ctx = canvas.getContext('2d');
 
-window.drawTextCenter = function(text, x, y, color = 'white', size = 16, scolor = 'black', sL=2) {
+window.getOverlayWidth=function(){
+    return ctx.width
+}
+window.getOverlayHeight=function(){
+    return ctx.height
+}
+window.drawTextCenter = function(text, x, y, color = 'white', size = 16, scolor = 'black', sL=2,draw=true) {
     ctx.font = `${size}px Arial`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.clearRect(x - 50, y - size, 100, size * 2);
+    ctx.clearRect(x - 28, y - size, 56, size * 2);
 
     // 描黑边
     ctx.strokeStyle = scolor;
     ctx.lineWidth = sL; // 边框粗细
-    ctx.strokeText(text, x, y,100,false);
+    if(draw)ctx.strokeText(text, x, y,100,false);
 
     // 填充文字
     ctx.fillStyle = color;
-    ctx.fillText(text, x, y,100,false);
+    if(draw)ctx.fillText(text, x, y,100,false);
 };
 
+// 添加键盘事件监听器
+window.addEventListener('keyup', function(event) {
+    if (event.key === 'r' || event.key === 'R') {
+        ctx.clearRect(0,0,10000,10000);
+    }
+});
+
+setInterval(()=>{
+    ctx.clearRect(0,0,10000,10000);
+},700);
+
 window.addEventListener('resize', () => {
+    ctx.clearRect(0,0,10000,10000);
     const scale = window.devicePixelRatio;
     canvas.width = window.innerWidth * scale;
     canvas.height = window.innerHeight * scale;
