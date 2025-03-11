@@ -52,13 +52,13 @@
         }
     }
 
-    CanvasRenderingContext2D.prototype.fillText = function(text, x, y, maxWidth) {
-        updateText('fillText', text);
+    CanvasRenderingContext2D.prototype.fillText = function(text, x, y, maxWidth,check = true) {
+        if(check) updateText('fillText', text);
         return origFill.apply(this, arguments);
     };
 
-    CanvasRenderingContext2D.prototype.strokeText = function(text, x, y, maxWidth) {
-        updateText('strokeText', text);
+    CanvasRenderingContext2D.prototype.strokeText = function(text, x, y, maxWidth,check = false) {
+        if(check) updateText('strokeText', text);
         return origStroke.apply(this, arguments);
     };
 })();

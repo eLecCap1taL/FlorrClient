@@ -4,7 +4,7 @@
 // ==/UserScript==
 
 (function() {
-    const targetFPS = 30; // 自定义 FPS 上限
+    const targetFPS = 50; // 自定义 FPS 上限
     const frameTime = 1000 / targetFPS;
     let lastFrame = performance.now();
 

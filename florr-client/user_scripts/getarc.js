@@ -4,16 +4,29 @@
 // ==/UserScript==
 
 (function() {
+
+
+
     const origArc = CanvasRenderingContext2D.prototype.arc;
     const arcSet = new Set(); // 使用 Set 去重坐标
+    const slotPre = new Map();
+    for(i=1;i<=10;i++){
+        slotPre[i]=-1;
+    }
+
+    // 监听窗口大小变化
+    window.addEventListener('resize', () => {
+        arcSet.clear();
+        console.log('窗口大小变化, Set 已清空');
+    });
 
     CanvasRenderingContext2D.prototype.arc = function(x, y, radius, startAngle, endAngle, counterclockwise) {
         const angleDiff = Math.abs(endAngle - startAngle) * 180 / Math.PI;
-        if (angleDiff > 355) return origArc.apply(this, arguments);
+        if (angleDiff > 358) return origArc.apply(this, arguments);
 
         const transform = this.getTransform();
-        const absX = transform.e + x;
-        const absY = transform.f + y;
+        const absX = Math.round(transform.e + x);
+        const absY = Math.round(transform.f + y);
 
         if (!(x === 0 && y === 0 && angleDiff === 360)) {
             const key = `${absX},${absY}`; // 用 x,y 作为唯一键
@@ -30,9 +43,11 @@
 
             if (sameYArcs.length >= 5 && sameYArcs.length <= 10) {
                 const slotIndex = sameYArcs.filter(([x]) => Number(x) < absX).length + 1;
-                const cooldownPercent = (360 - angleDiff) / 360 * 100;
-                if(cooldownPercent>1 && cooldownPercent<99){
-                    console.log(`卡槽 ${slotIndex} 冷却进度 ${cooldownPercent}%`);
+                const cooldownPercent = Math.round((360 - angleDiff) / 360 * 100);
+                if(cooldownPercent!=slotPre[slotIndex]){
+                    slotPre[slotIndex]=cooldownPercent
+                    // console.log(`卡槽 ${slotIndex} 冷却进度 ${cooldownPercent}%`);
+                    window.drawTextCenter(`${cooldownPercent}%`, absX,absY-canvas.height*0.035,'white',18,'black',2);
                 }
             }
         }
