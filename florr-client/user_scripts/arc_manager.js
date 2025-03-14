@@ -60,7 +60,7 @@
             return origArc.apply(this, arguments);
         }
         if(radius==17.5){
-            if(y<=this.canvas.height*0.9){
+            if(absY>=this.canvas.height*0.7 && absY<=this.canvas.height*0.9){
                 //buff
                 const buffPercent = Math.round((angleDiff) / 360*100);
                 if(window.displayBuffCD)    window.drawTextCenter(`${buffPercent}%`, absX,absY-canvas.height*0.02,'white',18,'black',2,1<=buffPercent && buffPercent<=99);

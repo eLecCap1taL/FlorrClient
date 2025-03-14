@@ -192,6 +192,7 @@ function _main_init(store){
     EQlock=store.get('lockEQ')
     mainWindow.webContents.executeJavaScript(`window.setDisplayPetalCD(${store.get('displayPetalCD')})`)
     mainWindow.webContents.executeJavaScript(`window.setDisplayBuffCD(${store.get('displayBuffCD')})`)
+    mainWindow.webContents.executeJavaScript(`window.setFpsLimit(${store.get('fpsLimit')})`)
     checkEQpass()
 }
 
@@ -240,6 +241,7 @@ app.whenReady().then(async () => {
             _loadouts_features_wheel: false,
             displayPetalCD: true,
             displayBuffCD: true,
+            fpsLimit: 1000,
         }
     });
 
@@ -533,6 +535,9 @@ app.whenReady().then(async () => {
     ipcMain.on('_updDisplayBuffCD', async (_event, val) => {
         // console.log(`buff ${val}`);
         mainWindow.webContents.executeJavaScript(`window.setDisplayBuffCD(${val})`)
+    })
+    ipcMain.on('_askPlaySound',(_event,val)=>{
+        playSound(val)
     })
 });
 

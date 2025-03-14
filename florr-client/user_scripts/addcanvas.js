@@ -49,7 +49,7 @@ window.addEventListener('keyup', function(event) {
 });
 
 setInterval(()=>{
-    ctx.clearRect(0,0,10000,10000);
+    ctx.clearRect(0,0,4000,4000);
 },700);
 
 window.addEventListener('resize', () => {

@@ -76,6 +76,7 @@ setFPSButton.addEventListener('click', async () => {
     if (ret < 1) ret = 1
     window.myAPI.setFlorrFPS(ret)
     appendLog(`设置FPS上限为 ${ret}`)
+    window.myAPI.changeSettings(['fpsLimit', ret]);
 });
 
 //套装设置

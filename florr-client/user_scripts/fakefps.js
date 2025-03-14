@@ -6,7 +6,7 @@
 (function() {
 
     window.setFpsLimit=function(targetFPS){
-        targetFPS=targetFPS/8.3*5
+        targetFPS=targetFPS/8.2*5
         window.frameTime=1000/targetFPS
     }
     window.frameTime = 0;
