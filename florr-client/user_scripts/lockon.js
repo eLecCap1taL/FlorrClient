@@ -1,32 +1,68 @@
 // ==UserScript==
-// @name         内存变化监控
+// @name         内存值搜索
 // @match        https://florr.io/*
 // ==/UserScript==
 
 (function() {
-    const baseIndex = 19238544 >> 2; // 基础索引
-    const range = 100; // 监控前后 100 个地址
-    let prevValues = new Float32Array(range * 2); // 存储前一帧值
+    let candidates = []; // 候选地址
 
-    // 初始化
-    for (let i = 0; i < range * 2; i++) {
-        prevValues[i] = Module.HEAPF32[baseIndex - range + i] || 0;
-    }
+    // 初次扫描（找 2.0-5.0 的值）
+    window.scanMemory = function() {
+        candidates = [];
+        for (let i = 0; i < Module.HEAPF32.length; i++) {
+            const value = Module.HEAPF32[i];
+            // if (value >= 0 && value <= 1) { // 假设转速范围
+                candidates.push({ index: i, value });
+            // }
+        }
+        console.log(`找到 ${candidates.length} 个候选地址`);
+    };
 
-    // 监控函数
-    function watchMemory() {
-        for (let i = 0; i < range * 2; i++) {
-            const index = baseIndex - range + i;
-            const current = Module.HEAPF32[index] || 0;
-            if (current !== prevValues[i] && current !== 0) { // 忽略不变和 0
-                console.log(`Access ${index} Change: ${prevValues[i]} -> ${current}`);
-                prevValues[i] = current;
+    // 筛选变化
+    window.filterMemoryNone = function() {
+        const newCandidates = [];
+        for (let candidate of candidates) {
+            const current = Module.HEAPF32[candidate.index];
+            if (current == candidate.value) {
+                newCandidates.push({ index: candidate.index, value: current });
+                // console.log(`地址 ${candidate.index} 变化: ${candidate.value} -> ${current}`);
             }
         }
+        candidates = newCandidates;
+        console.log(`剩余 ${candidates.length} 个候选`);
+    };
+    window.filterMemoryIncre = function() {
+        const newCandidates = [];
+        for (let candidate of candidates) {
+            const current = Module.HEAPF32[candidate.index];
+            if (current > candidate.value) {
+                newCandidates.push({ index: candidate.index, value: current });
+                // console.log(`地址 ${candidate.index} 变化: ${candidate.value} -> ${current}`);
+            }
+        }
+        candidates = newCandidates;
+        console.log(`剩余 ${candidates.length} 个候选`);
+    };
+    window.filterMemoryDecre = function() {
+        const newCandidates = [];
+        for (let candidate of candidates) {
+            const current = Module.HEAPF32[candidate.index];
+            if (current < candidate.value) {
+                newCandidates.push({ index: candidate.index, value: current });
+                // console.log(`地址 ${candidate.index} 变化: ${candidate.value} -> ${current}`);
+            }
+        }
+        candidates = newCandidates;
+        console.log(`剩余 ${candidates.length} 个候选`);
+    };
+
+    window.setRestV = function(val){
+        for(i=0;i<candidates.length;i++) Module.HEAPF32[candidates[i].index] = val
+    }
+    window.printRestV = function(val){
+        for(i=0;i<candidates.length;i++) console.log(candidates[i].index,Module.HEAPF32[candidates[i].index])
     }
 
-    // 每 100ms 检查一次
-    setInterval(watchMemory, 100);
-
-    console.log('开始监控内存变化...');
+    // 使用说明
+    console.log('运行 scanMemory() 开始扫描，按 E/Q 后运行 filterMemory() 筛选');
 })();
